@@ -1,6 +1,6 @@
 {
   "name": "orc",
   "private": true,
-  "packageManager": "pnpm@10.0.0",
-  "engines": { "node": ">=22" }
+  "packageManager": "pnpm@11.28.3",
+  "engines": { "node": ">=24" }
 }
