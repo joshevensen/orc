@@ -1,0 +1,31 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  apps/api: {}
+
+  apps/cli: {}
+
+  apps/web: {}
+
+  apps/worker: {}
+
+  packages/api-client: {}
+
+  packages/code-host-github: {}
+
+  packages/contracts: {}
+
+  packages/issue-tracker-jira: {}
+
+  packages/models-bedrock: {}
+
+  packages/notifications-email: {}
+
+  packages/sandbox-k8s: {}
