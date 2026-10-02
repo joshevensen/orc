@@ -34,4 +34,6 @@ importers:
 
   packages/notifications-email: {}
 
+  packages/object-store-s3: {}
+
   packages/sandbox-k8s: {}

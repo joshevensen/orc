@@ -1,5 +1,5 @@
 {
-  "name": "@orc/worker",
+  "name": "@orc/object-store-s3",
   "version": "0.0.0",
   "private": true,
   "type": "module",

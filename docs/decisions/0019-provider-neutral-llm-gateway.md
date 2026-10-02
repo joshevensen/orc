@@ -1,6 +1,6 @@
 # 0019 — A provider-neutral LLM gateway
 
-**Status:** Accepted, verify early · **Date:** 2026-10-02 · **Supersedes:** 0010
+**Status:** Accepted, verify early (masking engine amended by 0022) · **Date:** 2026-10-02 · **Supersedes:** 0010
 
 ## Context
 The agent runs inside the sandbox but needs a model. Putting provider credentials in the sandbox would break 0009. Orc also needs one place to record cost (FR-47), apply spending caps (FR-48), pin model versions (FR-82), and keep PII out of model context (Q-SEC-3). 0010 did this with Bedrock and Bedrock Guardrails. Organizations should be able to choose their provider (Bedrock, the Anthropic API, DigitalOcean Inference, others later).
