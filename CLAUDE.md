@@ -4,17 +4,18 @@ Orc hands well-defined engineering work to AI while people stay in control. Read
 
 - [docs/requirements.md](docs/requirements.md): what Orc must do (FR-, Q-, C- IDs)
 - [docs/architecture.md](docs/architecture.md): how it's built
+- [docs/interface.md](docs/interface.md): how the web app is laid out and behaves
 - [docs/decisions/](docs/decisions/README.md): why (ADRs)
 
 ## Workspace
 
-pnpm 11 workspace, Node 24+, TypeScript 6, ESM. Layout and package naming follow ADR 0015 and [architecture §3](docs/architecture.md#3-repository-layout): `apps/*` (api, worker, gateway, sandbox-agent, web, cli) and `packages/*` (contracts, db, integrations named kind-then-vendor, api-client). Local Postgres, Temporal, Presidio, and SeaweedFS run from `docker-compose.yml` (`pnpm services:up`); copy `.env.example` to `.env`.
+pnpm 11 workspace, Node 24+, TypeScript 6, ESM. Layout and package naming follow ADR 0015 and [architecture §3](docs/architecture.md#3-repository-layout): `apps/*` (api, worker, gateway, sandbox-agent, web) and `packages/*` (contracts, db, integrations named kind-then-vendor, api-client). Local Postgres, Temporal, Presidio, and SeaweedFS run from `docker-compose.yml` (`pnpm services:up`); copy `.env.example` to `.env`.
 
 - Apps code against `packages/contracts`. Only an app's composition root (its integrations module) imports integration packages and binds them to contracts with Nest DI.
 - Packages are framework-free TypeScript: no Nest decorators, no enums or other non-erasable syntax (`erasableSyntaxOnly`). Nest code lives only in apps.
-- `web` and `cli` use only `packages/api-client`. They never import from `api`, `worker`, or an integration package.
-- Workspace packages are named `@orc/<name>`, are `private`, and are never published. Only the CLI will be published, to npmjs.com under a name chosen at its first release.
-- Internal packages export TypeScript source (`"exports"` points at `src/index.ts`) and have no build step. Node runs them with type stripping; Vite and tsdown bundle them. `tsdown` builds only the CLI and the sandbox agent.
+- `web` uses only `packages/api-client`. It never imports from `api`, `worker`, or an integration package.
+- Workspace packages are named `@orc/<name>`, are `private`, and are never published. There is no CLI in v1 (ADR 0025).
+- Internal packages export TypeScript source (`"exports"` points at `src/index.ts`) and have no build step. Node runs them with type stripping; Vite and tsdown bundle them. `tsdown` builds only the sandbox agent.
 - Import extensions: in packages and Vite/tsdown apps, relative imports end in `.ts`; in Nest apps (api, worker, gateway, compiled by SWC), they end in `.js`.
 - NestJS stays on 11 until `nestjs-zod` supports 12. TypeScript stays on 6 until the tooling supports the native TypeScript 7 compiler.
 - Dependencies are pinned to exact versions (`saveExact` in `pnpm-workspace.yaml`). Updates come through grouped Dependabot PRs.
@@ -41,7 +42,6 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 | Durable runs | `@temporalio/client`, `@temporalio/worker`, `@temporalio/workflow`, `@temporalio/activity`, `@temporalio/testing` |
 | API client | `@hey-api/openapi-ts` (generates `packages/api-client`) |
 | Web | `vite`, `@vitejs/plugin-react`, `@tanstack/react-router`, `@tanstack/router-plugin`, `@tanstack/react-query`, `@tanstack/react-table`, `recharts`, `react-markdown`, `remark-gfm`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, shadcn/ui (copied components and their Radix dependencies), `tailwindcss`, `@tailwindcss/vite`, `@tabler/icons-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css` (the shadcn CLI runs through `pnpm dlx shadcn`, not installed) |
-| CLI | `commander` |
 | Markdown (server) | `unified`, `remark-parse`, `remark-gfm`, `@types/mdast` (Orc's own Markdown ↔ Jira ADF converter lives in `issue-tracker-jira`) |
 | Object storage | `@aws-sdk/client-s3` (S3, or SeaweedFS locally), only in `object-store-s3` |
 | Code host and issue trackers | `octokit`, `jira.js` |

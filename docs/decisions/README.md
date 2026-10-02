@@ -8,7 +8,7 @@ Requirement IDs (FR-, Q-, C-) refer to [requirements.md](../requirements.md).
 |---|---|---|
 | [0001](0001-internal-first-org-scoped-data.md) | Internal first, with all data scoped to an organization | Accepted |
 | [0002](0002-github-only-integrations-behind-contracts.md) | GitHub only in v1; every integration behind a contract | Accepted |
-| [0003](0003-web-ui-and-cli-no-chat.md) | Web UI and CLI; no chat integration in v1 | Accepted |
+| [0003](0003-web-ui-and-cli-no-chat.md) | Web UI and CLI; no chat integration in v1 | Superseded by 0025 |
 | [0004](0004-orc-runs-outside-github.md) | Orc runs outside GitHub, as a GitHub App | Accepted |
 | [0005](0005-learning-and-quality-are-the-core.md) | Learning and quality are the core; the coding agent is replaceable | Accepted |
 | [0006](0006-durable-runs-on-temporal.md) | Durable runs on self-hosted Temporal | Accepted |
@@ -30,3 +30,5 @@ Requirement IDs (FR-, Q-, C-) refer to [requirements.md](../requirements.md).
 | [0022](0022-pii-masking-presidio.md) | PII masking with Presidio; real values restored in responses | Accepted, verify early |
 | [0023](0023-host-on-eks.md) | Host Orc on EKS in AWS; drop DigitalOcean | Accepted |
 | [0024](0024-sandboxes-on-eks-karpenter.md) | Execution environments on EKS with Agent Sandbox, gVisor, and Karpenter | Accepted, verify early |
+| [0025](0025-web-app-is-the-workspace.md) | The web app is Orc's workspace; no CLI; review happens in Orc before the PR | Accepted |
+| [0026](0026-one-repo-per-task-and-run-records.md) | One repo per task; run records instead of conversation | Accepted |

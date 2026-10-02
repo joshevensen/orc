@@ -1,6 +1,6 @@
 # 0003 — Web UI and CLI; no chat integration in v1
 
-**Status:** Accepted · **Date:** 2026-10-01
+**Status:** Superseded by 0025 · **Date:** 2026-10-01
 
 ## Context
 Slack was originally an interface for starting work, approving, and notifications. The web UI is a better place to see runs, decide, and talk with Orc. But a web UI is somewhere people visit; it can't reach them when Orc is blocked.

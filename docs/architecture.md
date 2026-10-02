@@ -1,6 +1,6 @@
 # Orc — Architecture
 
-This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0024) are referenced throughout.
+This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0026) are referenced throughout.
 
 ## 1. Principles
 
@@ -8,7 +8,7 @@ This document says **how Orc is built**. What Orc must do is in [requirements.md
 2. **The agent proposes; Orc acts** (0009). Nothing the AI produces touches the outside world without passing deterministic checks outside the sandbox.
 3. **Rigid safety, flexible behaviour.** Workflows stay thin. Limits, permissions, and checks are code; what the agent knows and how it works is skills and lessons.
 4. **Isolation in depth.** Organization data is isolated in the database (0014); runs are isolated in sandboxes (0024); credentials never enter a sandbox (0019).
-5. **Everything is an API first** (FR-54, C-5). The web UI and CLI are clients of the same OpenAPI spec.
+5. **Everything is an API first** (FR-54, C-5). The web app is a client of the OpenAPI spec, which stays complete enough for any future client.
 
 ## 2. System overview
 
@@ -16,7 +16,6 @@ This document says **how Orc is built**. What Orc must do is in [requirements.md
 flowchart LR
   subgraph People
     WEB[Web UI]
-    CLI[CLI]
     JIRAU[Jira users]
   end
 
@@ -41,7 +40,6 @@ flowchart LR
   EXT[Other agents]
 
   WEB --> API
-  CLI --> API
   JIRAU --> JIRA
   JIRA -- webhooks --> API
   GH -- webhooks --> API
@@ -73,7 +71,6 @@ apps/
   gateway/    LLM gateway (Nest), with the Presidio Analyzer as a sidecar
   sandbox-agent/  program baked into sandbox images: runs the Claude Agent SDK loop, talks only to the gateway
   web/        React SPA (Vite, TanStack Router), generated API client, TanStack Query
-  cli/        thin client of the API
 packages/
   contracts/            integration interfaces and shared types only
   db/                   Drizzle schema, migrations, and the org-scoped transaction helper (0014)
@@ -98,9 +95,9 @@ The skills live in a **separate repo** (0012).
 ## 4. Components
 
 ### API (`apps/api`)
-NestJS, one module per domain: organizations and setup, people and identity, work items, runs, approvals, conversations, policy, lessons, skills, evals, usage and cost, audit, webhooks, MCP.
+NestJS, one module per domain: organizations and setup, people and identity, work items, runs, approvals, messages, policy, lessons, skills, evals, usage and cost, audit, webhooks, MCP.
 - Produces the OpenAPI spec with `@nestjs/swagger` (C-5).
-- Receives Jira and GitHub webhooks, normalizes them into Orc events, maps the actor to a known person (FR-4, FR-5), and decides whether the event is an explicit action (FR-8). Only explicit actions start or signal runs.
+- Receives Jira and GitHub webhooks, normalizes them into Orc events, and maps the actor to a known person (FR-4, FR-5). Tracker events update tasks; they never start runs. Only explicit actions in the web app start or signal runs (FR-6, FR-8).
 - Signs people in through the organization's identity provider over OIDC (FR-58).
 
 ### Workers (`apps/worker`)
@@ -116,10 +113,7 @@ A small service the sandbox can reach, and the only route to a model. See §7.
 Serves approved lessons and skills to other agents (FR-74), with the same access rules as the API (FR-75). Built with the MCP TypeScript SDK, hosted in the API.
 
 ### Web UI (`apps/web`)
-For seeing, configuring, deciding, and talking with Orc (FR-56). A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
-
-### CLI (`apps/cli`)
-Starts workflows, answers questions, approves, talks with Orc. Uses only the generated API client.
+Orc's workspace (FR-56, 0025; layout and behaviour in [interface.md](interface.md)): tasks grouped by state, task creation, run history, review of each workflow's output before anything leaves Orc, approvals, run records, insights, and settings. A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
 
 ## 5. Integration contracts
 
@@ -134,7 +128,7 @@ Starts workflows, answers questions, approves, talks with Orc. Uses only the gen
 | `LlmProvider` | `models-bedrock`, `models-anthropic`; `models-fake` for development and tests | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
 | `ObjectStore` | `object-store-s3` | Store and delete screenshots, evidence, and attachments, scoped by organization (Q-DAT-2) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
-| `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types (0011) |
+| `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types, returning results, action requests, and decision records (FR-77, 0011) |
 
 The API and workers depend only on `contracts`; Nest dependency injection selects the implementation.
 
@@ -151,7 +145,7 @@ sequenceDiagram
   participant AS as Action service
   participant X as GitHub / Jira
 
-  P->>API: explicit action (start)
+  P->>API: explicit action in the web app (start)
   API->>T: start run
   T->>SB: claim sandbox (warm pool), check out repo
   loop each step
@@ -173,6 +167,7 @@ sequenceDiagram
 - **Limits:** attempts, review rounds, and check runs are counters in the workflow (FR-13). Lifetime and resource limits are enforced by the sandbox (FR-65). Spending caps are enforced by the gateway (FR-48).
 - **Cancel and pause:** cancellation is Temporal cancellation (FR-10). The emergency stop (FR-83) is a policy flag checked before every activity, plus cancellation of affected runs.
 - **Takeover and hand-back:** takeover ends the run and leaves the branch (FR-11). On hand-back, the run starts from the branch's current head, including the person's commits (FR-87). Orc never force-pushes over commits it didn't make.
+- **Change review in Orc** (FR-90, 0025): Develop's run ends with the change held for review, so no run is in progress while people review (FR-7); the sandbox is kept until the idle limit (FR-64). People review the branch's diff, change-review comments, and evidence in the web app. Requesting changes is a follow-up (FR-78): Orc restates the work and starts a new run only after confirmation. Approving is the person's action that starts Ship (FR-19), which opens the pull request.
 - **Follow-up:** a confirmed follow-up starts a new run linked to the previous one and seeded with its results (FR-78).
 - **Watching proposed changes:** a long-lived workflow per open proposed change reacts to CI results, base-branch movement, and review activity (FR-86, FR-88).
 
@@ -225,7 +220,7 @@ Work item text, comments, repo content, and conversations are always data in the
 
 ```mermaid
 flowchart LR
-  SRC[Comments, reviews,<br/>spec edits, conversations<br/>on Orc's own work] --> DET[Detect recurring patterns]
+  SRC[Comments, reviews,<br/>spec and manual edits<br/>on Orc's own work] --> DET[Detect recurring patterns]
   DET --> PROP[Proposed lesson<br/>with source links]
   PROP --> APPR{Manager or<br/>Admin approves?}
   APPR -- no --> X[Discarded]
@@ -236,7 +231,7 @@ flowchart LR
   USE --> TRACE[Run records lessons applied]
 ```
 
-- **Capture** (FR-67, FR-73, FR-81): comment and review events on Orc's own work items and pull requests, edits to its specifications, and conversations are stored as signals.
+- **Capture** (FR-67, FR-73, FR-81): review comments made in Orc, comment and review events on Orc's own work items and pull requests, edits to its specifications, manual edits during change review (FR-91), and replies to Orc's messages are stored as signals.
 - **Detect:** a scheduled workflow groups similar signals and proposes a lesson once a pattern recurs, linking to its sources. Conflicting signals become a conflict for a person (FR-72).
 - **Approve** (FR-68): any Manager or Admin.
 - **Measure** (FR-70): run the affected skills' eval cases with and without the lesson; reject if worse.
@@ -260,10 +255,12 @@ Main entities:
 |---|---|
 | Organization, Team, Person, Identity link | Identity links map Jira and GitHub accounts and sign-in identities to a person (FR-4) |
 | Repo, Repo settings, Product mapping | Build-and-check settings, Admin context, policy (FR-2, FR-3, FR-25, FR-26) |
-| Work item reference | Pointer to the tracker's item; Orc doesn't own work items |
-| Run, Step, Action request, Action record | Full trace of what happened and why (FR-47, Q-AUD-1) |
-| Proposed change | Pull requests per run, stack membership, watch state |
-| Conversation, Message | Linked to runs and work items (FR-77–FR-81) |
+| Task (work item reference) | Pointer to the tracker's item, plus Orc's task state; Orc doesn't own work items (FR-6, FR-89) |
+| Change review, Change-review comment | A person's review in Orc of a developed change before any pull request: the decision and their line comments (FR-90). Distinct from Orc's review comments on a proposed change. |
+| Run, Step, Decision record, Action request, Action record | Full trace of what happened and why. Each step writes decision records (what was decided, the reason, what was checked, lessons used) as it goes (FR-47, FR-77, Q-AUD-1) |
+| Proposed change | The task's pull request (or stack) in its one repo, watch state (FR-32) |
+| Message | Orc's messages and questions to people, and their replies, linked to the task and run (FR-79–FR-81) |
+| Task link | Links between tasks, e.g. the per-repo parts of cross-repo work (FR-32) |
 | Signal, Lesson, Lesson version, Lesson use | Learning system; embeddings in pgvector |
 | Skill release, Model version, Eval case, Eval result | Quality system |
 | Policy, Approval, Spending cap, Pause flag | Human control |

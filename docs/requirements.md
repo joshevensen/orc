@@ -37,9 +37,9 @@ Turning an issue into a pull request is now available inside issue trackers and 
 
 ## 2. Scope
 
-**In scope for v1:** one organization; GitHub; the spec, develop, ship, investigate, and document workflows; a web interface and a command line; notifications through the issue tracker and email.
+**In scope for v1:** one organization; GitHub; the spec, develop, ship, investigate, and document workflows; a web interface; notifications through the issue tracker and email.
 
-**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than GitHub Issues and Jira Cloud; LLM providers other than Bedrock and the Anthropic API; organization-defined custom workflows; long-lived interactive remote environments.
+**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than GitHub Issues and Jira Cloud; LLM providers other than Bedrock and the Anthropic API; organization-defined custom workflows; long-lived interactive remote environments; a command line; live previews of a run's app.
 
 ## 3. Glossary
 
@@ -52,8 +52,9 @@ Turning an issue into a pull request is now available inside issue trackers and 
 | **Run** | One execution of a workflow on one work item, from start until it stops. |
 | **Step** | One unit of work within a run. |
 | **Skill** | A packaged, versioned AI capability that workflows use and that people can also use directly. |
-| **Proposed change** | A branch plus a pull request that Orc opens for human review. A work item that spans several repos has one proposed change per repo. A proposed change may be split into a stack of dependent pull requests in the same repo. |
+| **Proposed change** | A branch plus a pull request that Orc opens for human review. A task changes one repo, so it has at most one proposed change (FR-32). A proposed change may be split into a stack of dependent pull requests in the same repo. |
 | **Review comment** | A comment Orc leaves on a proposed change, attached to a line, a range of lines, or a file. Not part of the code. |
+| **Change review** | A person's review in Orc of a developed change before any proposed change exists: their decision (approve or request changes) and their line comments, called **change-review comments** to distinguish them from review comments. |
 | **Execution environment** | The isolated place where Orc installs, builds, tests, and runs a repo's code for one run. |
 | **Designs** | Visual references attached to a work item (e.g. design-tool frames or images) that the built result should match. |
 | **Knowledge source** | Material an organization designates as authoritative — product terminology, definitions, style guides. |
@@ -113,9 +114,10 @@ Givens, not choices:
 
 ### Starting, continuing, and stopping work
 
-* **FR-6** — Users can start any workflow from the issue tracker or the command line. ⚠️ Whether "from the issue tracker" means assigning the item to Orc, a comment command, or both — including whether Orc uses Jira's own agent-assignment model — is open (see §9).
+* **FR-6** — Users start every workflow from Orc's web interface, on a task. A task is a work item, either created in Orc (Orc then creates it in the issue tracker) or created in the tracker. Tracker changes update the task but never start a run.
+* **FR-89** — Users can create a task in Orc by choosing the one repo it affects and describing the work. Orc creates the matching work item in the organization's issue tracker, which stays the record that project managers plan from.
 * **FR-7** — A work item has at most one run in progress at a time.
-* **FR-8** — Only an explicit action by a permitted user starts or continues a run. Talking with Orc never does on its own (FR-77). Explicit actions include: starting a workflow, answering Orc's questions and asking it to continue, an approval decision, a reviewer requesting changes on Orc's proposed change, confirming a follow-up request (FR-78), and a CI failure or merge conflict on Orc's own proposed change where Admin policy lets Orc respond to those automatically (FR-86).
+* **FR-8** — Only an explicit action by a permitted user starts or continues a run. Commenting never does on its own. Explicit actions include: starting a workflow, answering Orc's questions and asking it to continue, an approval decision, a reviewer requesting changes on Orc's proposed change, confirming a follow-up request (FR-78), and a CI failure or merge conflict on Orc's own proposed change where Admin policy lets Orc respond to those automatically (FR-86).
 * **FR-9** — When a run continues after stopping for input, Orc picks up where it left off — it doesn't repeat work or re-ask answered questions.
 * **FR-10** — A permitted user can cancel a run at any time. Orc stops cleanly and reports what it had done.
 * **FR-11** — An engineer can take over a run's work — Orc stops, and its branch and findings are left in a state a person can continue from.
@@ -134,12 +136,17 @@ Givens, not choices:
   * Orc proves the change does what the specification asks. For each acceptance criterion it produces evidence — a test that exercises it, output from running the code, or a screenshot of the running app. New or changed behaviour is covered by tests where the repo supports it. Where Orc can't verify a criterion, it says so plainly instead of implying it was checked.
   * When designs are attached, the running result is checked against them.
   * Commits are organized so a reviewer can follow them in order — each commit does one kind of thing (e.g. a refactor separate from the behaviour change it enables).
-* **FR-16 — Ship:** open the developed change as a proposed change that a reviewer can act on (see [Reviewability](#reviewability)). Revise it when a reviewer requests changes. Report when it's ready for a human to merge.
+* **FR-90** — When Develop finishes, its run ends with the change held for a **change review** in Orc: the diff, change-review comments, and the verification evidence for each acceptance criterion. No run is in progress while the change waits (FR-7). People either request changes, which is a follow-up (FR-78): Orc restates what it will do and starts a new run only once they confirm. Or they approve, which is the person's action that starts Ship (FR-19) to open the proposed change. [later: open the running app from the run's environment to try it.]
+* **FR-91** — Engineers can edit a developed change directly during review, on repos they can work on. The edit becomes a commit on the run's branch, attributed to them and checked like any other push (FR-85). The change's checks and evidence are then marked out of date and re-run only when someone asks; it can't be approved until they pass again.
+* **FR-92** — Comments people make on a task in Orc are also posted to the task's item in the issue tracker, attributed to them, and the tracker's comments appear in Orc.
+* **FR-16 — Ship:** after the change is approved in Orc (FR-90), open it as a proposed change that a reviewer can act on (see [Reviewability](#reviewability)). Revise it when a reviewer requests changes. Report when it's ready for a human to merge.
 * **FR-17 — Investigate:** turn a bug report into one of: a confirmed root cause with a recommended next step, specific questions for the reporter, or an escalation to engineering. Never changes code.
   * Orc reproduces the bug where it can, and says whether a root cause was confirmed by reproducing it or only inferred from evidence.
   * When the fix needs code, Orc adds a proposed fix to the work item, written so that Develop can start from it once a person has reviewed it.
   * When the fix needs no code (e.g. it's already deployed, or needs a manual action), Orc says so instead.
 * **FR-18 — Document:** turn a documentation request and its sources into a draft that is accurate to the code and sources and consistent with the organization's knowledge sources. Never publishes.
+  * Documentation that lives in the task's repo becomes a change that goes through change review (FR-90) and Ship like code; a person merges it.
+  * Documentation that lives elsewhere (help center, knowledge base) is attached to the work item as an approved draft and can be downloaded as Markdown; a person publishes it. [later: publishing to external documentation tools through an integration contract.]
 
 ### Reviewability
 
@@ -161,7 +168,7 @@ Givens, not choices:
 ### Human control
 
 * **FR-19** — Orc never merges code, publishes content, or starts a workflow on its own; one workflow never triggers another. Moving a work item from Spec to Develop to Ship is always a person's action.
-* **FR-20** — Admins can require human approval at defined points in a workflow. Anyone whose role allows them to work on that workflow can approve, send back with feedback, or reject — from the issue tracker, the command line, or the web interface.
+* **FR-20** — Admins can require human approval at defined points in a workflow. Anyone whose role allows them to work on that workflow can approve, send back with feedback, or reject — from the web interface.
 * **FR-21** — When Orc can't proceed, it stops and asks the right person specific questions — including exactly what's wrong with any input it can't use (e.g. a design link that doesn't point at a specific design).
 * **FR-22** — Anything Orc produces for external audiences is a draft until a person publishes it.
 * **FR-83** — Admins can pause Orc instantly for the whole organization, one workflow, or one repo. Runs in progress stop cleanly at once, no new runs start, and everyone affected is told. Only an Admin can resume, and pausing and resuming are recorded for audit.
@@ -175,16 +182,15 @@ Givens, not choices:
 * **FR-27** — Nothing in a repo can loosen the policy Admins have set for it.
 * **FR-28** — Orc never adds its own tooling, configuration, or working files to a repo as part of other work; a proposed change contains only what the work asked for. Review comments and the description are not part of the repo and are allowed.
 * **FR-29** — Everything Orc contributes to a repo (branches, proposed changes, comments) is clearly identifiable as AI-authored.
-* **FR-30** — Orc works out which repos a work item involves — one or several — or asks.
+* **FR-30** — Every task belongs to exactly one repo, chosen when the task is created (FR-89). When Orc finds the work also needs changes in another repo, it says so and proposes a linked task for that repo instead of changing it.
 * **FR-31** — Orc supports these repo shapes specifically:
   * **Monorepos** — several projects in one repo.
   * **pnpm workspace repos** — packages managed as a pnpm workspace.
   * **Submodule repos** — repos composed of other repos via git submodules, where work may span the parent and its submodules.
-* **FR-32** — A single work item can span multiple repos:
-  * Develop makes the changes in every repo the work item needs, and tests them together where the repos depend on each other.
-  * Ship opens one proposed change per repo, links them to each other and to the work item, and states any order they must be merged in.
-  * Revisions and cancellations apply to the whole set; the work item isn't reported ready until every proposed change in the set is.
-  * Investigate may look across related repos when the evidence points elsewhere, and says which repos it examined.
+* **FR-32** — A task changes only its own repo:
+  * Work that needs changes in several repos is split into linked tasks, one per repo. People decide the order they ship in; Orc shows the links on each task.
+  * A submodule repo (FR-31) counts as one repo with its submodules.
+  * Investigate may read related repos when the evidence points elsewhere, and says which repos it examined, but never changes them.
 
 ### Running code safely
 
@@ -211,7 +217,7 @@ Givens, not choices:
 
 ### Learning
 
-* **FR-67** — Orc learns how the organization wants its code to look and how it makes decisions, from the comments, review feedback, and requested changes on the work items and proposed changes Orc itself worked on, and from conversations about that work (FR-81). It never learns from work it wasn't part of. When a pattern recurs (e.g. reviewers repeatedly asking for the same kind of change), Orc proposes a lesson, with links to the comments it came from.
+* **FR-67** — Orc learns how the organization wants its code to look and how it makes decisions, from the comments, review feedback, and requested changes on the work items and proposed changes Orc itself worked on, and from replies to its messages about that work (FR-81). It never learns from work it wasn't part of. When a pattern recurs (e.g. reviewers repeatedly asking for the same kind of change), Orc proposes a lesson, with links to the comments it came from.
 * **FR-73** — Orc learns to write better specifications the same way it learns to write better code. Sources include: the edits people make to specifications Orc proposed; questions Develop had to ask because a specification left something out; and review feedback on proposed changes that traces back to something the specification missed. Spec lessons follow the same approval, scoping, measurement, and tracing rules as other lessons (FR-68–FR-72).
 * **FR-68** — No lesson is applied until it is approved. Any Manager or Admin can approve a lesson of any scope; who should approve what is for the organization to decide outside Orc. Anyone can flag a comment as a possible lesson, but only Managers and Admins approve.
 * **FR-69** — Every lesson has a scope — a repo, a team, or the organization — and is versioned. Any Manager or Admin can edit, retire, or set an expiry on any lesson.
@@ -245,22 +251,24 @@ Givens, not choices:
 * **FR-51** — Orc tailors how it communicates to each person's role — plain language and no code for non-technical roles, technical detail for engineers — and when a message goes to several roles, it gives each what they need.
 * **FR-52** — The right people are told when Orc needs a decision, needs information, or finishes — on the work item, by email, and in the web interface.
 * **FR-53** — Orc writes to each issue tracker in that tracker's native formatting (GitHub-flavored Markdown for GitHub Issues, Atlassian Document Format for Jira).
-* **FR-77** — Users can talk with Orc about any run, during it or after it ends, from the issue tracker, the command line, or the web interface. They can ask what it did, why it made a decision, what it checked, and which lessons it applied. Orc answers from the run's record, says when it doesn't know, and changes nothing while answering.
+* **FR-77** — For any run, during it or after it ends, users can see in the run's record what it did, why it made each decision, what it checked, and which lessons it applied. Each step records its decisions and the reasons for them when they're made, not reconstructed afterwards. The record can be searched and filtered. [later: ask Orc questions about a run in conversation.]
 * **FR-78** — After a run ends, a permitted user can ask Orc for follow-up work on the same work item (e.g. "also handle the empty state"). Orc restates what it will do and which workflow it will use, and starts only once the user confirms. Follow-up work continues from the earlier run's results rather than starting over.
-* **FR-79** — Orc can start a conversation with a user, not only reply. It messages people to ask a question, request a decision, report progress on long runs, flag a risk it found, propose a lesson, or say that a limit or cap was reached. Every message is linked to the work item or run it's about, and the user can reply in the same place.
+* **FR-79** — Orc can message a user, not only reply. It messages people to ask a question, request a decision, report progress on long runs, flag a risk it found, propose a lesson, or say that a limit or cap was reached. Every message is linked to the work item or run it's about, and the user can reply in the same place.
 * **FR-80** — Each user chooses where Orc reaches them (e.g. a mention in the issue tracker, email, the web interface) and which kinds of messages they receive right away, receive as a digest, or don't receive. Messages that block work (questions and decisions) can't be turned off, only redirected.
-* **FR-81** — Conversations with Orc are kept with the run they're about. A correction made in conversation can become a proposed lesson (FR-41, FR-67), following the same approval rules as any other lesson.
+* **FR-81** — Comments, change reviews, and replies to Orc's messages are kept with the task they're about. A correction made in any of them can become a proposed lesson (FR-41, FR-67), following the same approval rules as any other lesson.
 
 ### Interfaces
 
-* **FR-54** — Everything a user can do, they can do through a documented API; the command line and the web interface offer nothing the API doesn't.
-* **FR-55** — People who don't use the command line can use Orc fully through the issue tracker and the web interface.
-* **FR-56** — The web interface is for seeing, configuring, and deciding — not for starting workflows. In it, users can:
+* **FR-54** — Everything a user can do, they can do through a documented API; the web interface offers nothing the API doesn't.
+* **FR-55** — People use Orc fully through the web interface. Project managers can keep working only in the issue tracker, where Orc writes status, comments, and proposed edits.
+* **FR-56** — The web interface is Orc's workspace, organized around tasks rather than sessions. In it, users can:
+  * see their tasks grouped by state (needs them, queued or running, ready for review, done), create tasks, and start workflows on them;
+  * review a developed change before any proposed change is opened (FR-90);
   * browse runs and see, for any run, what triggered it, each step, what it produced, where it stopped and why, and what it cost;
   * see usage, cost, and quality trends by workflow, team, repo, and over time;
   * see how each skill is performing and how versions compare;
   * act on pending approvals;
-  * talk with Orc about any run, and see and reply to messages Orc has sent them;
+  * see any run's record (FR-77), and see and reply to messages Orc has sent them;
   * compare what Orc built against a work item's designs;
   * manage everything their access level allows them to configure.
 
@@ -345,9 +353,7 @@ How an organization knows Orc is working:
 
 ## 9. Open questions ⚠️
 
-* **Trigger model:** should Orc start work when an item is assigned to it, on a comment command (e.g. a label or `@orc`), or both? Jira now lets work items be assigned to AI agents directly; GitHub has bot assignment. (Feeds FR-6, FR-8.)
 * **Workflows per role:** which workflows can each role work on? For example, can Support start Develop, or only Investigate? (Feeds FR-57.)
-* **Document scope:** which destinations (e.g. help center, internal knowledge base) are in v1?
 * **Custom workflows:** should organizations eventually define their own workflows?
 * **Web interface in v1:** everything in FR-56 at launch, or run history and settings first, with trends and quality views after?
 * **Machine identity:** how do automated parts of Orc and its integrations prove who they are?
