@@ -1,6 +1,6 @@
 # 0011 — Agent loop on the Claude Agent SDK, behind an interface
 
-**Status:** Accepted, verify early · **Date:** 2026-10-01
+**Status:** Accepted, verify early (Bedrock-specific details amended by 0019) · **Date:** 2026-10-01
 
 ## Context
 Writing an agent loop from scratch is significant work and not Orc's core (0005). In-house systems at Stripe and Ramp built on existing open-source agents (Goose, OpenCode).
