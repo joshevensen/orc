@@ -79,7 +79,7 @@ Three tabs.
 
 - **One file per page.** A dropdown lists the changed files; next and previous buttons and keyboard shortcuts move between them.
 - The dropdown shows, for each file, whether this person has marked it **reviewed** and how many comments it has. Source files come first; generated and lock files are listed last and collapsed.
-- **Line comments** on the diff. Comments are part of the review (FR-90) and a source for learning (FR-67).
+- **Line comments** on the diff, called change-review comments (FR-90). They're part of the change review and a source for learning (FR-67).
 - **Manual edits** (Engineers only, on repos they can work on, FR-91):
   - An Engineer can edit the file directly in the diff view.
   - Saving creates a commit on the run's branch, authored by that person, made through the Action service (which still runs the secret scan, FR-85). Orc builds on people's commits and never rewrites them (FR-87).
@@ -107,11 +107,12 @@ The control panel shows the actions for the current state.
 | Queued | Queued or running | Cancel |
 | Running | Queued or running | Cancel |
 | Ready for review | Ready for review; Needs you for its requester | **Approve**, **Request changes**, **Re-run checks** (if out of date), comment |
-| Approved, shipping | Queued or running | — |
+| Approved, shipping (Ship run) | Queued or running | Cancel |
 | Pull request open | Done (watched, FR-86) | Comment; reviewers act on GitHub |
 | Done | Done | **Follow-up** (FR-78), comment |
 
-- **Approve** in review lets Ship open the pull request (FR-16, FR-90). It is disabled while checks are out of date.
+- No run is in progress while a task is ready for review (FR-7). **Approve** starts Ship, which opens the pull request (FR-16, FR-19, FR-90); it is disabled while checks are out of date. **Re-run checks** starts a short run that only re-runs checks and evidence.
+- **Request changes** and **Follow-up** both go through FR-78: Orc restates the work and starts a new run only once the person confirms.
 - The emergency pause (FR-83) is in Settings and, for Admins, in the header of every page.
 
 ## 7. Other pages

@@ -167,7 +167,7 @@ sequenceDiagram
 - **Limits:** attempts, review rounds, and check runs are counters in the workflow (FR-13). Lifetime and resource limits are enforced by the sandbox (FR-65). Spending caps are enforced by the gateway (FR-48).
 - **Cancel and pause:** cancellation is Temporal cancellation (FR-10). The emergency stop (FR-83) is a policy flag checked before every activity, plus cancellation of affected runs.
 - **Takeover and hand-back:** takeover ends the run and leaves the branch (FR-11). On hand-back, the run starts from the branch's current head, including the person's commits (FR-87). Orc never force-pushes over commits it didn't make.
-- **Review in Orc** (FR-90, 0025): after Develop, the run waits at a review gate. People review the branch's diff, line comments, and evidence in the web app. Requesting changes starts a follow-up run; approving lets Ship open the pull request.
+- **Change review in Orc** (FR-90, 0025): Develop's run ends with the change held for review, so no run is in progress while people review (FR-7); the sandbox is kept until the idle limit (FR-64). People review the branch's diff, change-review comments, and evidence in the web app. Requesting changes is a follow-up (FR-78): Orc restates the work and starts a new run only after confirmation. Approving is the person's action that starts Ship (FR-19), which opens the pull request.
 - **Follow-up:** a confirmed follow-up starts a new run linked to the previous one and seeded with its results (FR-78).
 - **Watching proposed changes:** a long-lived workflow per open proposed change reacts to CI results, base-branch movement, and review activity (FR-86, FR-88).
 
@@ -256,7 +256,7 @@ Main entities:
 | Organization, Team, Person, Identity link | Identity links map Jira and GitHub accounts and sign-in identities to a person (FR-4) |
 | Repo, Repo settings, Product mapping | Build-and-check settings, Admin context, policy (FR-2, FR-3, FR-25, FR-26) |
 | Task (work item reference) | Pointer to the tracker's item, plus Orc's task state; Orc doesn't own work items (FR-6, FR-89) |
-| Review, Review comment | Reviews of a developed change in Orc, with line comments and the decision (FR-90) |
+| Change review, Change-review comment | A person's review in Orc of a developed change before any pull request: the decision and their line comments (FR-90). Distinct from Orc's review comments on a proposed change. |
 | Run, Step, Action request, Action record | Full trace of what happened and why (FR-47, Q-AUD-1) |
 | Proposed change | Pull requests per run, stack membership, watch state |
 | Conversation, Message | Linked to runs and work items (FR-77–FR-81) |

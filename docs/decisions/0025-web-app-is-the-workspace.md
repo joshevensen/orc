@@ -11,7 +11,7 @@
 - **The issue tracker is the record.** Project managers plan there. Orc reads items and writes back status, comments, and proposed edits (FR-14); it doesn't become a second place to edit items.
 - **Runs start only from Orc**, by an explicit action in the web app (FR-8). Tracker events update tasks but don't start runs. This settles the trigger-model question.
 - **Asynchronous, not live.** People don't steer a run while it works. They answer questions and review at checkpoints, then request changes, which start follow-up runs (FR-78).
-- **Review happens in Orc before a pull request exists.** Develop pushes to the run's branch. People review the change in Orc (diff, line comments, evidence) and either request changes or approve. Only approval lets Ship open the pull request.
+- **Review happens in Orc before a pull request exists.** Develop pushes to the run's branch and its run ends, holding the change for a change review; no run is in progress while people review (FR-7). People review the change in Orc (diff, change-review comments, evidence). Requesting changes is a follow-up (FR-78): Orc restates the work and starts a new run only once they confirm. Approving is the person's action that starts Ship (FR-19), which opens the pull request.
 - **Live previews are later.** In v1, evidence is screenshots, test output, and recordings (FR-15). Opening the running app from a sandbox through Orc's authenticated proxy comes after.
 - No chat integration (Slack, Teams) in v1; the chat contract is kept for later. Orc reaches people in the web app, by email, and through tracker mentions.
 
