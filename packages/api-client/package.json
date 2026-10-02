@@ -5,5 +5,16 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "openapi-ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.104.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0"
   }
 }

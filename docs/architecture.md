@@ -69,11 +69,14 @@ One pnpm monorepo (0015):
 ```
 apps/
   api/        NestJS control plane: REST API, webhooks, policy, lessons, audit, MCP server
-  worker/     Temporal workers: workflow definitions and activities
+  worker/     Temporal workers: workflow definitions, activities, Action service
+  gateway/    LLM gateway (Nest), with the Presidio Analyzer as a sidecar
+  sandbox-agent/  program baked into sandbox images: runs the Claude Agent SDK loop, talks only to the gateway
   web/        React SPA (Vite, TanStack Router), generated API client, TanStack Query
   cli/        thin client of the API
 packages/
   contracts/            integration interfaces and shared types only
+  db/                   Drizzle schema, migrations, and the org-scoped transaction helper (0014)
   issue-tracker-github/
   issue-tracker-jira/
   code-host-github/
