@@ -1,6 +1,6 @@
 # Orc — Architecture
 
-This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0020) are referenced throughout.
+This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0021) are referenced throughout.
 
 ## 1. Principles
 
@@ -70,7 +70,7 @@ One pnpm monorepo (0015):
 apps/
   api/        NestJS control plane: REST API, webhooks, policy, lessons, audit, MCP server
   worker/     Temporal workers: workflow definitions and activities
-  web/        React (Vite), generated API client, TanStack Query
+  web/        TanStack Start (React, Vite), generated API client, TanStack Query
   cli/        thin client of the API
 packages/
   contracts/            integration interfaces and shared types only
@@ -112,7 +112,7 @@ A small service the sandbox can reach, and the only route to a model. See §7.
 Serves approved lessons and skills to other agents (FR-74), with the same access rules as the API (FR-75). Built with the MCP TypeScript SDK, hosted in the API.
 
 ### Web UI (`apps/web`)
-For seeing, configuring, deciding, and talking with Orc (FR-56). Uses only the generated API client.
+For seeing, configuring, deciding, and talking with Orc (FR-56). TanStack Start, rendering and routing only: no server functions or server-side data access. Uses only the generated API client (0021).
 
 ### CLI (`apps/cli`)
 Starts workflows, answers questions, approves, talks with Orc. Uses only the generated API client.
