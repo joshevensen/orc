@@ -2,5 +2,16 @@
   "name": "orc",
   "private": true,
   "packageManager": "pnpm@11.28.3",
-  "engines": { "node": ">=24" }
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r --parallel typecheck",
+    "services:up": "docker compose up -d",
+    "services:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.0",
+    "typescript": "6.0.3"
+  }
 }

@@ -1,0 +1,40 @@
+# Local development services. Not used in production (see docs/architecture.md §11).
+name: orc
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg17-trixie
+    environment:
+      POSTGRES_USER: orc
+      POSTGRES_PASSWORD: orc
+      POSTGRES_DB: orc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orc"]
+      interval: 5s
+      retries: 10
+
+  # Temporal dev server (SQLite-backed), with the web UI on :8233.
+  temporal:
+    image: temporalio/temporal:1.9.1
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--db-filename", "/data/temporal.db"]
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+    volumes:
+      - temporal-data:/data
+
+  # PII detection for the LLM gateway (ADR 0022).
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio-analyzer:2.2.362
+    environment:
+      PORT: "3000"
+    ports:
+      - "5002:3000"
+
+volumes:
+  postgres-data:
+  temporal-data:
