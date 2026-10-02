@@ -12,6 +12,9 @@ pnpm 11 workspace, Node 24+, TypeScript, ESM. Layout and package naming follow A
 
 - `api` and `worker` depend on `packages/contracts`, never on an integration package directly; Nest DI selects the implementation.
 - `web` and `cli` use only `packages/api-client`. They never import from `api`, `worker`, or an integration package.
+- Workspace packages are named `@orc/<name>`, are `private`, and are never published. Only the CLI will be published, to npmjs.com under a name chosen at its first release.
+- Internal packages export TypeScript source (`"exports"` points at `src/`); the consuming app compiles them (Vite for web, SWC for Nest). Don't add a build step to an internal package. `tsdown` is only for what gets published (the CLI).
+- Dependencies are pinned to exact versions (`save-exact` in `.npmrc`). Updates come through grouped Dependabot PRs.
 
 ## Dependencies
 
