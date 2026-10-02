@@ -1,5 +1,5 @@
 {
-  "name": "@orc/models-digitalocean",
+  "name": "@orc/models-fake",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@orc/contracts": "workspace:*",
-    "openai": "7.25.0"
+    "@orc/contracts": "workspace:*"
   }
 }

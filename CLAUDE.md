@@ -8,7 +8,7 @@ Orc hands well-defined engineering work to AI while people stay in control. Read
 
 ## Workspace
 
-pnpm 11 workspace, Node 24+, TypeScript 6, ESM. Layout and package naming follow ADR 0015 and [architecture §3](docs/architecture.md#3-repository-layout): `apps/*` (api, worker, gateway, sandbox-agent, web, cli) and `packages/*` (contracts, db, integrations named kind-then-vendor, api-client). Local Postgres, Temporal, and Presidio run from `docker-compose.yml` (`pnpm services:up`); copy `.env.example` to `.env`.
+pnpm 11 workspace, Node 24+, TypeScript 6, ESM. Layout and package naming follow ADR 0015 and [architecture §3](docs/architecture.md#3-repository-layout): `apps/*` (api, worker, gateway, sandbox-agent, web, cli) and `packages/*` (contracts, db, integrations named kind-then-vendor, api-client). Local Postgres, Temporal, Presidio, and SeaweedFS run from `docker-compose.yml` (`pnpm services:up`); copy `.env.example` to `.env`.
 
 - Apps code against `packages/contracts`. Only an app's composition root (its integrations module) imports integration packages and binds them to contracts with Nest DI.
 - Packages are framework-free TypeScript: no Nest decorators, no enums or other non-erasable syntax (`erasableSyntaxOnly`). Nest code lives only in apps.
@@ -18,6 +18,12 @@ pnpm 11 workspace, Node 24+, TypeScript 6, ESM. Layout and package naming follow
 - Import extensions: in packages and Vite/tsdown apps, relative imports end in `.ts`; in Nest apps (api, worker, gateway, compiled by SWC), they end in `.js`.
 - NestJS stays on 11 until `nestjs-zod` supports 12. TypeScript stays on 6 until the tooling supports the native TypeScript 7 compiler.
 - Dependencies are pinned to exact versions (`saveExact` in `pnpm-workspace.yaml`). Updates come through grouped Dependabot PRs.
+
+## Local development
+
+- `pnpm services:up` starts Postgres, Temporal, Presidio, and SeaweedFS (local S3); copy `.env.example` to `.env`.
+- Models: set `LLM_PROVIDER` to `fake` (canned or replayed responses, no network) or `anthropic` (real calls with `ANTHROPIC_API_KEY`, cheap model, small spending cap). Use `bedrock` only when working on `models-bedrock`.
+- Tests never call a real model. Workflow tests use a fake `Agent`; gateway tests use `models-fake`; end-to-end tests replay recordings, and a missing recording fails the test. See [architecture §12](docs/architecture.md#12-local-development-and-testing).
 
 ## Dependencies
 
@@ -37,9 +43,9 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 | Web | `vite`, `@vitejs/plugin-react`, `@tanstack/react-router`, `@tanstack/router-plugin`, `@tanstack/react-query`, `@tanstack/react-table`, `recharts`, `react-markdown`, `remark-gfm`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, shadcn/ui (copied components and their Radix dependencies), `tailwindcss`, `@tailwindcss/vite`, `@tabler/icons-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css` (the shadcn CLI runs through `pnpm dlx shadcn`, not installed) |
 | CLI | `commander` |
 | Markdown (server) | `unified`, `remark-parse`, `remark-gfm`, `@types/mdast` (Orc's own Markdown ↔ Jira ADF converter lives in `issue-tracker-jira`) |
-| Object storage | `@aws-sdk/client-s3` (S3-compatible: DigitalOcean Spaces, S3, MinIO), only in `object-store-s3` |
+| Object storage | `@aws-sdk/client-s3` (S3, or SeaweedFS locally), only in `object-store-s3` |
 | Code host and issue trackers | `octokit`, `jira.js` |
-| LLM providers and agent | `@anthropic-ai/sdk`, `@anthropic-ai/bedrock-sdk`, `@anthropic-ai/claude-agent-sdk`, `openai` (DigitalOcean only) |
+| LLM providers and agent | `@anthropic-ai/sdk`, `@anthropic-ai/bedrock-sdk`, `@anthropic-ai/claude-agent-sdk` |
 | Sandbox | `@kubernetes/client-node` |
 | Auth | `openid-client` |
 | MCP | `@modelcontextprotocol/sdk` |

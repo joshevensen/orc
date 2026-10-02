@@ -1,6 +1,6 @@
 # 0017 — Self-managed Kubernetes on any infrastructure
 
-**Status:** Accepted · **Date:** 2026-10-02 · **Supersedes:** 0007
+**Status:** Superseded by 0023 · **Date:** 2026-10-02 · **Supersedes:** 0007
 
 ## Context
 0007 tied Orc to EKS and an AWS account. Orc must deploy on any infrastructure that can run it (Q-ORG-3). Managed Kubernetes services limit the node runtime (for example, DigitalOcean's DOKS allows only the default containerd runtime), which blocks the sandbox design in 0018. The builder knows DigitalOcean better than AWS.

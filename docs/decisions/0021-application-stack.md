@@ -1,6 +1,8 @@
 # 0021 — Application stack and dependency policy
 
-**Status:** Accepted · **Date:** 2026-10-02
+**Status:** Accepted (DigitalOcean references removed by 0023) · **Date:** 2026-10-02
+
+> **Superseded in part by 0023:** DigitalOcean is no longer used. Object storage is S3 (SeaweedFS locally), and embeddings for organizations on the Anthropic API come from Bedrock. References to DigitalOcean below are historical.
 
 ## Context
 Orc will be built largely by AI agents. Without a fixed stack, each change risks pulling in a new library for a solved problem. The choices must fit the architecture: one API that the web UI and CLI only consume (FR-54, C-5), row-level security on every database transaction (0014), and Zod-shaped contracts shared across packages.

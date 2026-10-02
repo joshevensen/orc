@@ -22,9 +22,11 @@ Requirement IDs (FR-, Q-, C-) refer to [requirements.md](../requirements.md).
 | [0014](0014-postgres-row-level-security.md) | Postgres with row-level security and pgvector | Accepted |
 | [0015](0015-monorepo-and-package-naming.md) | pnpm monorepo; packages named by kind, then vendor | Accepted |
 | [0016](0016-reviewability-over-pr-size-limits.md) | Reviewability instead of PR size limits | Accepted |
-| [0017](0017-self-managed-kubernetes.md) | Self-managed Kubernetes on any infrastructure | Accepted |
-| [0018](0018-execution-environments-self-managed.md) | Execution environments on Agent Sandbox with gVisor, on our own nodes | Accepted, verify early |
+| [0017](0017-self-managed-kubernetes.md) | Self-managed Kubernetes on any infrastructure | Superseded by 0023 |
+| [0018](0018-execution-environments-self-managed.md) | Execution environments on Agent Sandbox with gVisor, on our own nodes | Superseded by 0024 |
 | [0019](0019-provider-neutral-llm-gateway.md) | A provider-neutral LLM gateway | Accepted, verify early |
 | [0020](0020-github-issues-as-issue-tracker.md) | GitHub Issues and Jira are the v1 issue trackers | Accepted |
 | [0021](0021-application-stack.md) | Application stack and dependency policy | Accepted |
 | [0022](0022-pii-masking-presidio.md) | PII masking with Presidio; real values restored in responses | Accepted, verify early |
+| [0023](0023-host-on-eks.md) | Host Orc on EKS in AWS; drop DigitalOcean | Accepted |
+| [0024](0024-sandboxes-on-eks-karpenter.md) | Execution environments on EKS with Agent Sandbox, gVisor, and Karpenter | Accepted, verify early |

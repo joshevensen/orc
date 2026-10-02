@@ -1,6 +1,6 @@
 # 0014 — Postgres with row-level security and pgvector
 
-**Status:** Accepted (hosting amended by 0017) · **Date:** 2026-10-01
+**Status:** Accepted (hosting amended by 0023) · **Date:** 2026-10-01
 
 ## Context
 All data is scoped to an organization (0001, Q-ORG-1). Lessons need similarity search to find the ones relevant to a piece of work.

@@ -39,7 +39,7 @@ Turning an issue into a pull request is now available inside issue trackers and 
 
 **In scope for v1:** one organization; GitHub; the spec, develop, ship, investigate, and document workflows; a web interface and a command line; notifications through the issue tracker and email.
 
-**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than GitHub Issues and Jira Cloud; LLM providers other than Bedrock, the Anthropic API, and DigitalOcean Inference; organization-defined custom workflows; long-lived interactive remote environments.
+**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than GitHub Issues and Jira Cloud; LLM providers other than Bedrock and the Anthropic API; organization-defined custom workflows; long-lived interactive remote environments.
 
 ## 3. Glossary
 
@@ -93,7 +93,7 @@ Givens, not choices:
 
 * **C-1** — GitHub Issues and Jira Cloud are the issue trackers in v1; an organization uses one or both. Other trackers are [later] and must be possible without reworking the workflows.
 * **C-2** — Repos live on GitHub in v1. GitLab support is [later] and must be possible without reworking the workflows.
-* **C-3** — The LLM provider is chosen per organization, from AWS Bedrock, the Anthropic API, and DigitalOcean Inference in v1, and used through **the organization's own account** with that provider. Orc itself runs on infrastructure we operate (see Q-ORG-3).
+* **C-3** — The LLM provider is chosen per organization, from AWS Bedrock and the Anthropic API in v1, and used through **the organization's own account** with that provider. An organization on the Anthropic API also connects Bedrock for embeddings. Orc itself runs on infrastructure we operate (see Q-ORG-3).
 * **C-4** — Built in TypeScript.
 * **C-5** — Every API is described by an OpenAPI specification.
 * **C-6** — Orc can be operated within a SOC2-audited environment, and gives each organization the controls and evidence its own SOC2 audit needs (see [Audit and compliance](#audit-and-compliance)).
