@@ -113,7 +113,7 @@ A small service the sandbox can reach, and the only route to a model. See §7.
 Serves approved lessons and skills to other agents (FR-74), with the same access rules as the API (FR-75). Built with the MCP TypeScript SDK, hosted in the API.
 
 ### Web UI (`apps/web`)
-Orc's workspace (FR-56, 0025): tasks grouped by state, task creation, run history, review of developed changes before any pull request (diff, line comments, evidence), approvals, conversations, insights, and settings. A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
+Orc's workspace (FR-56, 0025; layout and behaviour in [interface.md](interface.md)): tasks grouped by state, task creation, run history, review of developed changes before any pull request (diff, line comments, evidence), approvals, conversations, insights, and settings. A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
 
 ## 5. Integration contracts
 

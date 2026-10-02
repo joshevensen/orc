@@ -4,6 +4,7 @@ Orc hands well-defined engineering work to AI while people stay in control. Read
 
 - [docs/requirements.md](docs/requirements.md): what Orc must do (FR-, Q-, C- IDs)
 - [docs/architecture.md](docs/architecture.md): how it's built
+- [docs/interface.md](docs/interface.md): how the web app is laid out and behaves
 - [docs/decisions/](docs/decisions/README.md): why (ADRs)
 
 ## Workspace

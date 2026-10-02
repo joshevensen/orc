@@ -136,6 +136,8 @@ Givens, not choices:
   * When designs are attached, the running result is checked against them.
   * Commits are organized so a reviewer can follow them in order — each commit does one kind of thing (e.g. a refactor separate from the behaviour change it enables).
 * **FR-90** — Before Ship, people review a developed change in Orc: the diff, line comments, and the verification evidence for each acceptance criterion. They either request changes, which start a follow-up run (FR-78), or approve, which allows Ship to open the proposed change. [later: open the running app from the run's environment to try it.]
+* **FR-91** — Engineers can edit a developed change directly during review, on repos they can work on. The edit becomes a commit on the run's branch, attributed to them and checked like any other push (FR-85). The change's checks and evidence are then marked out of date and re-run only when someone asks; it can't be approved until they pass again.
+* **FR-92** — Comments people make on a task in Orc are also posted to the task's item in the issue tracker, attributed to them, and the tracker's comments appear in Orc.
 * **FR-16 — Ship:** after the change is approved in Orc (FR-90), open it as a proposed change that a reviewer can act on (see [Reviewability](#reviewability)). Revise it when a reviewer requests changes. Report when it's ready for a human to merge.
 * **FR-17 — Investigate:** turn a bug report into one of: a confirmed root cause with a recommended next step, specific questions for the reporter, or an escalation to engineering. Never changes code.
   * Orc reproduces the bug where it can, and says whether a root cause was confirmed by reproducing it or only inferred from evidence.
