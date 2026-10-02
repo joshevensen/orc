@@ -24,6 +24,8 @@ importers:
 
   packages/issue-tracker-github: {}
 
+  packages/models-anthropic: {}
+
   packages/models-bedrock: {}
 
   packages/models-digitalocean: {}

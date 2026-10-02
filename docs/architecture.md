@@ -33,7 +33,7 @@ flowchart LR
   end
 
   GH[GitHub<br/>code and issues]
-  LLM[LLM provider<br/>Bedrock or DO Inference]
+  LLM[LLM provider<br/>Bedrock, Anthropic API, or DO Inference]
   MAIL[Email]
   SK[Skills repo]
   EXT[Other agents]
@@ -72,6 +72,7 @@ packages/
   issue-tracker-github/
   code-host-github/
   models-bedrock/
+  models-anthropic/
   models-digitalocean/
   notifications-email/
   sandbox-k8s/
@@ -120,7 +121,7 @@ Starts workflows, answers questions, approves, talks with Orc. Uses only the gen
 | `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests, line and file review comments, stacked pull requests, CI status, events |
 | `Notifications` | `notifications-email` | Deliver messages and digests (FR-79, FR-80) |
 | `IdentityProvider` | OIDC | Sign-in, user directory |
-| `LlmProvider` | `models-bedrock`, `models-digitalocean` | Authenticate, translate, and forward model calls; usage reporting; used only by the gateway (0019) |
+| `LlmProvider` | `models-bedrock`, `models-anthropic`, `models-digitalocean` | Authenticate, translate, and forward model calls; usage reporting; used only by the gateway (0019) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
 | `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types (0011) |
 
