@@ -28,7 +28,7 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 | Database | `drizzle-orm`, `drizzle-kit`, `pg` |
 | Durable runs | `@temporalio/client`, `@temporalio/worker`, `@temporalio/workflow`, `@temporalio/activity`, `@temporalio/testing` |
 | API client | `@hey-api/openapi-ts` (generates `packages/api-client`) |
-| Web | `@tanstack/react-start`, `@tanstack/react-router`, `@tanstack/react-query`, `@tanstack/react-table`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, shadcn/ui (copied components and their Radix dependencies), `tailwindcss`, `@tabler/icons-react` |
+| Web | `vite`, `@vitejs/plugin-react`, `@tanstack/react-router`, `@tanstack/router-plugin`, `@tanstack/react-query`, `@tanstack/react-table`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, shadcn/ui (copied components and their Radix dependencies), `tailwindcss`, `@tabler/icons-react` |
 | CLI | `commander` |
 | Code host and issue trackers | `octokit`, `jira.js` |
 | LLM providers and agent | `@anthropic-ai/sdk`, `@anthropic-ai/bedrock-sdk`, `@anthropic-ai/claude-agent-sdk`, `openai` (DigitalOcean only) |
@@ -45,7 +45,7 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 |---|---|
 | `class-validator`, `class-transformer`, `joi`, `yup` | `zod` via `nestjs-zod` |
 | `typeorm`, `prisma`, `sequelize`, `knex` | `drizzle-orm` |
-| `next`, `remix`, `@remix-run/*` | `@tanstack/react-start` |
+| `next`, `remix`, `@remix-run/*`, `@tanstack/react-start` | `@tanstack/react-router` on Vite |
 | `axios`, `node-fetch`, `got` | `fetch` |
 | `lodash`, `underscore`, `ramda` | built-ins |
 | `moment`, `dayjs` | `Intl`, `Date`; ask if real date math is needed |
@@ -58,7 +58,7 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 
 ## Rules that code review enforces
 
-- **Web has no backend.** TanStack Start renders and routes only. No server functions, no server-side loaders that reach past the API client, no secrets in the web app (FR-54, ADR 0021).
+- **Web has no backend.** The web app is a static Vite SPA. All data comes through the generated API client; no secrets in the web app (FR-54, ADR 0021).
 - **Every database access is org-scoped.** Queries run in a transaction that sets the current organization for row-level security (ADR 0014). Tests cover cross-organization access.
 - **Workflows are deterministic.** Anything with side effects runs as a Temporal activity (ADR 0006).
 - **Credentials never enter a sandbox.** Model calls go through the LLM gateway; external changes go through the Action service (ADRs 0009, 0019).

@@ -70,7 +70,7 @@ One pnpm monorepo (0015):
 apps/
   api/        NestJS control plane: REST API, webhooks, policy, lessons, audit, MCP server
   worker/     Temporal workers: workflow definitions and activities
-  web/        TanStack Start (React, Vite), generated API client, TanStack Query
+  web/        React SPA (Vite, TanStack Router), generated API client, TanStack Query
   cli/        thin client of the API
 packages/
   contracts/            integration interfaces and shared types only
@@ -112,7 +112,7 @@ A small service the sandbox can reach, and the only route to a model. See §7.
 Serves approved lessons and skills to other agents (FR-74), with the same access rules as the API (FR-75). Built with the MCP TypeScript SDK, hosted in the API.
 
 ### Web UI (`apps/web`)
-For seeing, configuring, deciding, and talking with Orc (FR-56). TanStack Start, rendering and routing only: no server functions or server-side data access. Uses only the generated API client (0021).
+For seeing, configuring, deciding, and talking with Orc (FR-56). A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
 
 ### CLI (`apps/cli`)
 Starts workflows, answers questions, approves, talks with Orc. Uses only the generated API client.
