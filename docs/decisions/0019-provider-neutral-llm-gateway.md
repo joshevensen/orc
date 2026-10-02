@@ -2,6 +2,8 @@
 
 **Status:** Accepted, verify early (masking engine amended by 0022; DigitalOcean provider removed by 0023) · **Date:** 2026-10-02 · **Supersedes:** 0010
 
+> **Superseded in part by 0023:** DigitalOcean Inference and `models-digitalocean` were removed. The providers are Bedrock and the Anthropic API; references to DigitalOcean below are historical. Masking is amended by 0022.
+
 ## Context
 The agent runs inside the sandbox but needs a model. Putting provider credentials in the sandbox would break 0009. Orc also needs one place to record cost (FR-47), apply spending caps (FR-48), pin model versions (FR-82), and keep PII out of model context (Q-SEC-3). 0010 did this with Bedrock and Bedrock Guardrails. Organizations should be able to choose their provider (Bedrock, the Anthropic API, DigitalOcean Inference, others later).
 

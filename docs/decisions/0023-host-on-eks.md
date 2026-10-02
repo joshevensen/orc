@@ -23,4 +23,5 @@ DigitalOcean is dropped entirely, including DigitalOcean Inference as an LLM pro
 ## Consequences
 - Kubernetes manifests stay free of AWS specifics where practical, so Q-ORG-3 still holds; AWS-specific pieces (Karpenter node classes, IAM, RDS, S3) sit in deployment config.
 - `object-store-s3` and `models-bedrock` become the default implementations.
-- Local development still uses `docker-compose.yml`.
+- Local development still uses `docker-compose.yml`, with SeaweedFS as the local S3-compatible store (MinIO's image is no longer published).
+- The Anthropic API has no embeddings API, and DigitalOcean was the other embedding source. Organizations on the Anthropic API also connect Bedrock, used only for embeddings (0021).

@@ -196,7 +196,9 @@ flowchart LR
 ```
 
 ### Sandbox (0024)
-- Agent Sandbox with gVisor, on a dedicated node pool that Karpenter scales with demand, down to zero, up to a capacity limit. Runs beyond that limit wait in Temporal.
+- Agent Sandbox with gVisor, on a dedicated node pool that Karpenter scales with demand.
+- Orc enforces an Admin-set number of sandbox slots before creating a sandbox; runs beyond it wait in Temporal. Karpenter's node pool limit is only a backstop.
+- The warm pool size is an Admin setting (N ≥ 0). N = 0 lets the pool scale to zero when idle; N > 0 trades a fixed idle cost for faster starts.
 - Pods get **no AWS credentials** and **can't reach the instance metadata service**.
 - Network policies allow only the gateway, package registries, and other Admin-allowlisted destinations; everything else is blocked and logged (Q-SEC-5).
 - The repo is cloned with a short-lived, read-only token minted by Orc for that repo only, which is removed after checkout.
