@@ -82,6 +82,7 @@ packages/
   code-host-github/
   models-bedrock/
   models-anthropic/
+  models-fake/          development and tests only: canned, recorded, and replayed model responses
   notifications-email/
   object-store-s3/
   sandbox-k8s/
@@ -130,7 +131,7 @@ Starts workflows, answers questions, approves, talks with Orc. Uses only the gen
 | `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests, line and file review comments, stacked pull requests, CI status, events |
 | `Notifications` | `notifications-email` | Deliver messages and digests (FR-79, FR-80) |
 | `IdentityProvider` | OIDC | Sign-in, user directory |
-| `LlmProvider` | `models-bedrock`, `models-anthropic` | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
+| `LlmProvider` | `models-bedrock`, `models-anthropic`; `models-fake` for development and tests | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
 | `ObjectStore` | `object-store-s3` | Store and delete screenshots, evidence, and attachments, scoped by organization (Q-DAT-2) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
 | `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types (0011) |
@@ -283,13 +284,31 @@ EKS in our AWS account (0023):
 - **Environments:** a non-production copy uses its own GitHub App and a repo or label filter (GitHub) and Jira project filter so it never acts on production work (Q-OPS-1).
 - **Deploys:** rolling, with Temporal keeping runs alive across worker restarts (Q-REL-1, Q-REL-2).
 
-## 12. Observability and audit
+## 12. Local development and testing
+
+Every model call goes through the gateway's `LlmProvider` (0019), so model use is swapped at that one point. The gateway's provider is chosen by configuration (`LLM_PROVIDER`).
+
+| Situation | Approach |
+|---|---|
+| Workflow and Action service tests | A fake `Agent` that returns scripted results and action requests, with no model involved, on Temporal's time-skipping test environment |
+| Gateway tests (masking, caps, pinning, usage) | `models-fake` in **canned** mode: scripted responses, including streamed chunks and tool calls, and deterministic hash-based embeddings |
+| End-to-end agent sessions in tests and CI | `models-fake` in **replay** mode: responses recorded once from a real provider, keyed by a hash of the masked request, and replayed with no network calls |
+| Recording | `models-fake` in **record** mode wraps a real provider and saves each request and response |
+| Trying things locally | A real provider with a cheap model, usually the Anthropic API with a key (no AWS credentials needed), under a small spending cap |
+| Evals | Real providers only (§9) |
+
+- A request with no matching recording fails the test rather than calling a real provider.
+- Any change to a prompt, skill, or lesson changes request hashes, so recordings are re-recorded with one command. Keep the replay set small.
+- Fakes prove wiring, not quality; quality is measured only by evals.
+- `models-fake` is never bound in production.
+
+## 13. Observability and audit
 
 - **Tracing:** OpenTelemetry across API, workers, gateway, and Action service, with the run ID on every span (Q-OPS-2).
 - **Audit:** every action record, approval, policy change, pause, and restore is written to an append-only audit table (Q-AUD-1, Q-AUD-3).
 - **Usage:** the gateway's usage records feed the cost views (FR-50).
 
-## 13. To verify early
+## 14. To verify early
 
 These assumptions carry the most risk. Each should be tested before building on it:
 

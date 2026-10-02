@@ -19,6 +19,12 @@ pnpm 11 workspace, Node 24+, TypeScript 6, ESM. Layout and package naming follow
 - NestJS stays on 11 until `nestjs-zod` supports 12. TypeScript stays on 6 until the tooling supports the native TypeScript 7 compiler.
 - Dependencies are pinned to exact versions (`saveExact` in `pnpm-workspace.yaml`). Updates come through grouped Dependabot PRs.
 
+## Local development
+
+- `pnpm services:up` starts Postgres, Temporal, and Presidio; copy `.env.example` to `.env`.
+- Models: set `LLM_PROVIDER` to `fake` (canned or replayed responses, no network) or `anthropic` (real calls with `ANTHROPIC_API_KEY`, cheap model, small spending cap). Use `bedrock` only when working on `models-bedrock`.
+- Tests never call a real model. Workflow tests use a fake `Agent`; gateway tests use `models-fake`; end-to-end tests replay recordings, and a missing recording fails the test. See [architecture §12](docs/architecture.md#12-local-development-and-testing).
+
 ## Dependencies
 
 Use only the packages listed below (ADR 0021). **Adding a package not on this list needs a person's approval first**: stop and ask, giving the package, why, and what on the list falls short. When approved, add it here in the same change.
