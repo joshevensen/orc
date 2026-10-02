@@ -81,6 +81,7 @@ packages/
   models-anthropic/
   models-digitalocean/
   notifications-email/
+  object-store-s3/
   sandbox-k8s/
   api-client/           generated from the OpenAPI spec
 docs/
@@ -127,7 +128,8 @@ Starts workflows, answers questions, approves, talks with Orc. Uses only the gen
 | `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests, line and file review comments, stacked pull requests, CI status, events |
 | `Notifications` | `notifications-email` | Deliver messages and digests (FR-79, FR-80) |
 | `IdentityProvider` | OIDC | Sign-in, user directory |
-| `LlmProvider` | `models-bedrock`, `models-anthropic`, `models-digitalocean` | Authenticate, translate, and forward model calls; usage reporting; used only by the gateway (0019) |
+| `LlmProvider` | `models-bedrock`, `models-anthropic`, `models-digitalocean` | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
+| `ObjectStore` | `object-store-s3` | Store and delete screenshots, evidence, and attachments, scoped by organization (Q-DAT-2) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
 | `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types (0011) |
 
@@ -290,7 +292,7 @@ These assumptions carry the most risk. Each should be tested before building on 
 
 1. **Agent SDK through the gateway** (0011): the Claude Agent SDK can send model calls to Orc's gateway (Anthropic-compatible API) instead of directly to a provider.
 2. **Agent Sandbox** (0018): pause and resume keep state; warm-pool start time; gVisor runs on the reference node image and runs the repos' build and test tools.
-3. **PII masking** (0019): Orc's own masking quality and latency on realistic work item and log content.
+3. **PII masking** (0019): Orc's own masking quality and latency on realistic work item, code, and log content; candidate engine is Presidio as a gateway sidecar. Masking must be deterministic so prompt caching still works.
 4. **Copying commits out** (0009): reliably extracting and verifying commits from the sandbox, including for submodule repos (FR-31).
 5. **DigitalOcean provider** (0019): translation from the gateway's Anthropic-compatible API to DO's OpenAI-compatible endpoints preserves tool use, caching, and thinking.
 6. **Reference Postgres** (0017): RLS and pgvector on the chosen managed Postgres.

@@ -24,12 +24,14 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 | Area | Packages |
 |---|---|
 | Language and validation | `typescript`, `zod` |
-| API | `@nestjs/*`, `nestjs-zod`, `@nestjs/swagger` |
+| API | `@nestjs/*` on the Fastify platform (`@nestjs/platform-fastify`), `@fastify/cookie`, `nestjs-zod`, `@nestjs/swagger` |
 | Database | `drizzle-orm`, `drizzle-kit`, `pg` |
 | Durable runs | `@temporalio/client`, `@temporalio/worker`, `@temporalio/workflow`, `@temporalio/activity`, `@temporalio/testing` |
 | API client | `@hey-api/openapi-ts` (generates `packages/api-client`) |
-| Web | `vite`, `@vitejs/plugin-react`, `@tanstack/react-router`, `@tanstack/router-plugin`, `@tanstack/react-query`, `@tanstack/react-table`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, shadcn/ui (copied components and their Radix dependencies), `tailwindcss`, `@tabler/icons-react` |
+| Web | `vite`, `@vitejs/plugin-react`, `@tanstack/react-router`, `@tanstack/router-plugin`, `@tanstack/react-query`, `@tanstack/react-table`, `recharts`, `react-markdown`, `remark-gfm`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, shadcn/ui (copied components and their Radix dependencies), `tailwindcss`, `@tabler/icons-react` |
 | CLI | `commander` |
+| Markdown (server) | `unified`, `remark-parse`, `remark-gfm`, `@types/mdast` (Orc's own Markdown ↔ Jira ADF converter lives in `issue-tracker-jira`) |
+| Object storage | `@aws-sdk/client-s3` (S3-compatible: DigitalOcean Spaces, S3, MinIO), only in `object-store-s3` |
 | Code host and issue trackers | `octokit`, `jira.js` |
 | LLM providers and agent | `@anthropic-ai/sdk`, `@anthropic-ai/bedrock-sdk`, `@anthropic-ai/claude-agent-sdk`, `openai` (DigitalOcean only) |
 | Sandbox | `@kubernetes/client-node` |
@@ -37,7 +39,9 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 | MCP | `@modelcontextprotocol/sdk` |
 | Email | `nodemailer` |
 | Logging and tracing | `pino`, `nestjs-pino`, `@opentelemetry/*` |
-| Tooling | `@biomejs/biome`, `vitest`, `@playwright/test`, `tsdown` |
+| Tooling | `@biomejs/biome`, `vitest`, `@playwright/test`, `tsdown`, `@swc/core`, `@swc/cli` (Nest builds), `testcontainers`, `@testcontainers/postgresql` |
+
+Not npm packages, but part of the stack: **gitleaks** (secret scanning in the Action service, FR-85) and the **OSV API** via `fetch` (dependency vulnerability checks, FR-84).
 
 ### Not allowed
 
@@ -54,7 +58,9 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 | `jest`, `mocha` | `vitest` |
 | `lucide-react` | `@tabler/icons-react` |
 | `bullmq`, `agenda` | Temporal |
-| `@aws-sdk/client-bedrock-runtime` | `@anthropic-ai/bedrock-sdk` |
+| `@aws-sdk/*` other than `client-s3` | `@anthropic-ai/bedrock-sdk` for Bedrock; ask for anything else |
+| `express`, `@nestjs/platform-express` | `@nestjs/platform-fastify` |
+| Markdown ↔ ADF libraries | Orc's own converter in `issue-tracker-jira` |
 
 ## Rules that code review enforces
 
