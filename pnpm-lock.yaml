@@ -9,7 +9,7 @@ importers:
   .:
     devDependencies:
       '@types/node':
-        specifier: ^24.19.0
+        specifier: 24.19.0
         version: 24.19.0
       typescript:
         specifier: 6.0.3
@@ -18,25 +18,25 @@ importers:
   apps/api:
     dependencies:
       '@fastify/cookie':
-        specifier: ^11.1.2
+        specifier: 11.1.2
         version: 11.1.2
       '@fastify/static':
-        specifier: ^10.1.5
+        specifier: 10.1.5
         version: 10.1.5
       '@modelcontextprotocol/sdk':
-        specifier: ^1.31.0
+        specifier: 1.31.0
         version: 1.31.0(supports-color@8.1.1)(zod@4.6.5)
       '@nestjs/common':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/platform-fastify':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@fastify/static@10.1.5)(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@nestjs/swagger':
-        specifier: ^11.4.7
+        specifier: 11.4.7
         version: 11.4.7(@fastify/static@10.1.5)(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)
       '@orc/code-host-github':
         specifier: workspace:*
@@ -60,44 +60,44 @@ importers:
         specifier: workspace:*
         version: link:../../packages/object-store-s3
       '@temporalio/client':
-        specifier: ^1.24.0
+        specifier: 1.24.0
         version: 1.24.0
       nestjs-pino:
-        specifier: ^5.2.1
+        specifier: 5.2.1
         version: 5.2.1(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@11.0.0)(pino@10.3.1)(rxjs@7.8.2)
       nestjs-zod:
-        specifier: ^5.5.0
+        specifier: 5.5.0
         version: 5.5.0(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/swagger@11.4.7(@fastify/static@10.1.5)(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.6.5)
       openid-client:
-        specifier: ^6.8.8
+        specifier: 6.8.8
         version: 6.8.8
       pino:
-        specifier: ^10.3.1
+        specifier: 10.3.1
         version: 10.3.1
       pino-http:
-        specifier: ^11.0.0
+        specifier: 11.0.0
         version: 11.0.0
       reflect-metadata:
-        specifier: ^0.2.2
+        specifier: 0.2.2
         version: 0.2.2
       rxjs:
-        specifier: ^7.8.2
+        specifier: 7.8.2
         version: 7.8.2
       zod:
-        specifier: ^4.6.5
+        specifier: 4.6.5
         version: 4.6.5
     devDependencies:
       '@nestjs/cli':
-        specifier: ^11.0.24
+        specifier: 11.0.24
         version: 11.0.24(@swc/cli@0.7.10(@swc/core@1.16.13)(chokidar@4.0.3)(supports-color@8.1.1))(@swc/core@1.16.13)(@types/node@24.19.0)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(prettier@3.9.9)
       '@nestjs/testing':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@swc/cli':
         specifier: 0.7.10
         version: 0.7.10(@swc/core@1.16.13)(chokidar@4.0.3)(supports-color@8.1.1)
       '@swc/core':
-        specifier: ^1.16.13
+        specifier: 1.16.13
         version: 1.16.13
 
   apps/cli:
@@ -106,23 +106,23 @@ importers:
         specifier: workspace:*
         version: link:../../packages/api-client
       commander:
-        specifier: ^15.0.0
+        specifier: 15.0.0
         version: 15.0.0
     devDependencies:
       tsdown:
-        specifier: ^0.23.0
+        specifier: 0.23.0
         version: 0.23.0(tsx@4.23.15)(typescript@6.0.3)
 
   apps/gateway:
     dependencies:
       '@nestjs/common':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/platform-fastify':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@fastify/static@10.1.5)(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@orc/contracts':
         specifier: workspace:*
@@ -137,139 +137,139 @@ importers:
         specifier: workspace:*
         version: link:../../packages/models-digitalocean
       nestjs-pino:
-        specifier: ^5.2.1
+        specifier: 5.2.1
         version: 5.2.1(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@11.0.0)(pino@10.3.1)(rxjs@7.8.2)
       nestjs-zod:
-        specifier: ^5.5.0
+        specifier: 5.5.0
         version: 5.5.0(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/swagger@11.4.7(@fastify/static@10.1.5)(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.6.5)
       pino:
-        specifier: ^10.3.1
+        specifier: 10.3.1
         version: 10.3.1
       pino-http:
-        specifier: ^11.0.0
+        specifier: 11.0.0
         version: 11.0.0
       reflect-metadata:
-        specifier: ^0.2.2
+        specifier: 0.2.2
         version: 0.2.2
       rxjs:
-        specifier: ^7.8.2
+        specifier: 7.8.2
         version: 7.8.2
       zod:
-        specifier: ^4.6.5
+        specifier: 4.6.5
         version: 4.6.5
     devDependencies:
       '@nestjs/cli':
-        specifier: ^11.0.24
+        specifier: 11.0.24
         version: 11.0.24(@swc/cli@0.7.10(@swc/core@1.16.13)(chokidar@4.0.3)(supports-color@8.1.1))(@swc/core@1.16.13)(@types/node@24.19.0)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(prettier@3.9.9)
       '@nestjs/testing':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@swc/cli':
         specifier: 0.7.10
         version: 0.7.10(@swc/core@1.16.13)(chokidar@4.0.3)(supports-color@8.1.1)
       '@swc/core':
-        specifier: ^1.16.13
+        specifier: 1.16.13
         version: 1.16.13
 
   apps/sandbox-agent:
     dependencies:
       '@anthropic-ai/claude-agent-sdk':
-        specifier: ^0.3.286
+        specifier: 0.3.286
         version: 0.3.286(@anthropic-ai/sdk@0.131.0(zod@4.6.5))(@modelcontextprotocol/sdk@1.31.0(supports-color@8.1.1)(zod@4.6.5))(zod@4.6.5)
       '@orc/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
       zod:
-        specifier: ^4.6.5
+        specifier: 4.6.5
         version: 4.6.5
     devDependencies:
       tsdown:
-        specifier: ^0.23.0
+        specifier: 0.23.0
         version: 0.23.0(tsx@4.23.15)(typescript@6.0.3)
 
   apps/web:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^5.9.1
+        specifier: 5.9.1
         version: 5.9.1(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.89.0(@types/react@19.3.0)(react@19.3.0))(zod@4.6.5)
       '@orc/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
       '@tabler/icons-react':
-        specifier: ^3.48.0
+        specifier: 3.48.0
         version: 3.48.0(react@19.3.0)
       '@tanstack/react-query':
-        specifier: ^5.104.0
+        specifier: 5.104.0
         version: 5.104.0(react@19.3.0)
       '@tanstack/react-router':
-        specifier: ^1.170.41
+        specifier: 1.170.41
         version: 1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tanstack/react-table':
-        specifier: ^9.2.4
+        specifier: 9.2.4
         version: 9.2.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       class-variance-authority:
-        specifier: ^0.7.1
+        specifier: 0.7.1
         version: 0.7.1
       clsx:
-        specifier: ^2.1.1
+        specifier: 2.1.1
         version: 2.1.1
       react:
-        specifier: ^19.3.0
+        specifier: 19.3.0
         version: 19.3.0
       react-dom:
-        specifier: ^19.3.0
+        specifier: 19.3.0
         version: 19.3.0(react@19.3.0)
       react-hook-form:
-        specifier: ^7.89.0
+        specifier: 7.89.0
         version: 7.89.0(@types/react@19.3.0)(react@19.3.0)
       react-markdown:
-        specifier: ^10.1.0
+        specifier: 10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
       recharts:
-        specifier: ^3.10.1
+        specifier: 3.10.1
         version: 3.10.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1)
       remark-gfm:
-        specifier: ^4.0.1
+        specifier: 4.0.1
         version: 4.0.1(supports-color@8.1.1)
       tailwind-merge:
-        specifier: ^3.7.0
+        specifier: 3.7.0
         version: 3.7.0
       tw-animate-css:
-        specifier: ^1.4.0
+        specifier: 1.4.0
         version: 1.4.0
       zod:
-        specifier: ^4.6.5
+        specifier: 4.6.5
         version: 4.6.5
     devDependencies:
       '@tailwindcss/vite':
-        specifier: ^4.3.3
+        specifier: 4.3.3
         version: 4.3.3(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))
       '@tanstack/router-plugin':
-        specifier: ^1.168.42
+        specifier: 1.168.42
         version: 1.168.42(@tanstack/react-router@1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(esbuild@0.28.2)(rolldown@1.2.12)(supports-color@8.1.1)(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))(webpack@5.111.1(@swc/core@1.16.13)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28))
       '@types/react':
-        specifier: ^19.3.0
+        specifier: 19.3.0
         version: 19.3.0
       '@types/react-dom':
-        specifier: ^19.3.0
+        specifier: 19.3.0
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
-        specifier: ^6.1.1
+        specifier: 6.1.1
         version: 6.1.1(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15))
       tailwindcss:
-        specifier: ^4.3.3
+        specifier: 4.3.3
         version: 4.3.3
       vite:
-        specifier: ^8.3.1
+        specifier: 8.3.1
         version: 8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)
 
   apps/worker:
     dependencies:
       '@nestjs/common':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@orc/code-host-github':
         specifier: workspace:*
@@ -296,57 +296,57 @@ importers:
         specifier: workspace:*
         version: link:../../packages/sandbox-k8s
       '@temporalio/activity':
-        specifier: ^1.24.0
+        specifier: 1.24.0
         version: 1.24.0
       '@temporalio/client':
-        specifier: ^1.24.0
+        specifier: 1.24.0
         version: 1.24.0
       '@temporalio/worker':
-        specifier: ^1.24.0
+        specifier: 1.24.0
         version: 1.24.0(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)
       '@temporalio/workflow':
-        specifier: ^1.24.0
+        specifier: 1.24.0
         version: 1.24.0
       pino:
-        specifier: ^10.3.1
+        specifier: 10.3.1
         version: 10.3.1
       reflect-metadata:
-        specifier: ^0.2.2
+        specifier: 0.2.2
         version: 0.2.2
       rxjs:
-        specifier: ^7.8.2
+        specifier: 7.8.2
         version: 7.8.2
       zod:
-        specifier: ^4.6.5
+        specifier: 4.6.5
         version: 4.6.5
     devDependencies:
       '@nestjs/cli':
-        specifier: ^11.0.24
+        specifier: 11.0.24
         version: 11.0.24(@swc/cli@0.7.10(@swc/core@1.16.13)(chokidar@4.0.3)(supports-color@8.1.1))(@swc/core@1.16.13)(@types/node@24.19.0)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(prettier@3.9.9)
       '@nestjs/testing':
-        specifier: ^11.2.7
+        specifier: 11.2.7
         version: 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@swc/cli':
         specifier: 0.7.10
         version: 0.7.10(@swc/core@1.16.13)(chokidar@4.0.3)(supports-color@8.1.1)
       '@swc/core':
-        specifier: ^1.16.13
+        specifier: 1.16.13
         version: 1.16.13
       '@temporalio/testing':
-        specifier: ^1.24.0
+        specifier: 1.24.0
         version: 1.24.0(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)
 
   packages/api-client:
     dependencies:
       '@tanstack/react-query':
-        specifier: ^5.104.0
+        specifier: 5.104.0
         version: 5.104.0(react@19.3.0)
       zod:
-        specifier: ^4.6.5
+        specifier: 4.6.5
         version: 4.6.5
     devDependencies:
       '@hey-api/openapi-ts':
-        specifier: ^0.99.0
+        specifier: 0.99.0
         version: 0.99.0(typescript@6.0.3)
 
   packages/code-host-github:
@@ -355,13 +355,13 @@ importers:
         specifier: workspace:*
         version: link:../contracts
       octokit:
-        specifier: ^5.0.5
+        specifier: 5.0.5
         version: 5.0.5
 
   packages/contracts:
     dependencies:
       zod:
-        specifier: ^4.6.5
+        specifier: 4.6.5
         version: 4.6.5
 
   packages/db:
@@ -370,17 +370,17 @@ importers:
         specifier: workspace:*
         version: link:../contracts
       drizzle-orm:
-        specifier: ^0.45.3
+        specifier: 0.45.3
         version: 0.45.3(@types/pg@8.23.1)(pg@8.23.1)
       pg:
-        specifier: ^8.23.1
+        specifier: 8.23.1
         version: 8.23.1
     devDependencies:
       '@types/pg':
-        specifier: ^8.23.1
+        specifier: 8.23.1
         version: 8.23.1
       drizzle-kit:
-        specifier: ^0.31.11
+        specifier: 0.31.11
         version: 0.31.11
 
   packages/issue-tracker-github:
@@ -389,7 +389,7 @@ importers:
         specifier: workspace:*
         version: link:../contracts
       octokit:
-        specifier: ^5.0.5
+        specifier: 5.0.5
         version: 5.0.5
 
   packages/issue-tracker-jira:
@@ -398,26 +398,26 @@ importers:
         specifier: workspace:*
         version: link:../contracts
       jira.js:
-        specifier: ^6.2.0
+        specifier: 6.2.0
         version: 6.2.0
       remark-gfm:
-        specifier: ^4.0.1
+        specifier: 4.0.1
         version: 4.0.1(supports-color@8.1.1)
       remark-parse:
-        specifier: ^11.0.0
+        specifier: 11.0.0
         version: 11.0.0(supports-color@8.1.1)
       unified:
-        specifier: ^11.0.5
+        specifier: 11.0.5
         version: 11.0.5
     devDependencies:
       '@types/mdast':
-        specifier: ^4.0.4
+        specifier: 4.0.4
         version: 4.0.4
 
   packages/models-anthropic:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: ^0.131.0
+        specifier: 0.131.0
         version: 0.131.0(zod@4.6.5)
       '@orc/contracts':
         specifier: workspace:*
@@ -426,7 +426,7 @@ importers:
   packages/models-bedrock:
     dependencies:
       '@anthropic-ai/bedrock-sdk':
-        specifier: ^0.34.2
+        specifier: 0.34.2
         version: 0.34.2(zod@4.6.5)
       '@orc/contracts':
         specifier: workspace:*
@@ -438,7 +438,7 @@ importers:
         specifier: workspace:*
         version: link:../contracts
       openai:
-        specifier: ^7.25.0
+        specifier: 7.25.0
         version: 7.25.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.4)(undici@8.11.2)(ws@8.22.0)(zod@4.6.5)
 
   packages/notifications-email:
@@ -447,17 +447,17 @@ importers:
         specifier: workspace:*
         version: link:../contracts
       nodemailer:
-        specifier: ^10.0.13
+        specifier: 10.0.13
         version: 10.0.13
     devDependencies:
       '@types/nodemailer':
-        specifier: ^8.0.2
+        specifier: 8.0.2
         version: 8.0.2
 
   packages/object-store-s3:
     dependencies:
       '@aws-sdk/client-s3':
-        specifier: ^3.1144.0
+        specifier: 3.1144.0
         version: 3.1144.0
       '@orc/contracts':
         specifier: workspace:*
@@ -466,7 +466,7 @@ importers:
   packages/sandbox-k8s:
     dependencies:
       '@kubernetes/client-node':
-        specifier: ^2.0.0
+        specifier: 2.0.0
         version: 2.0.0(supports-color@8.1.1)
       '@orc/contracts':
         specifier: workspace:*

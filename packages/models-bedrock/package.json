@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/bedrock-sdk": "^0.34.2",
+    "@anthropic-ai/bedrock-sdk": "0.34.2",
     "@orc/contracts": "workspace:*"
   }
 }

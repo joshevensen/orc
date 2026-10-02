@@ -17,7 +17,7 @@ pnpm 11 workspace, Node 24+, TypeScript 6, ESM. Layout and package naming follow
 - Internal packages export TypeScript source (`"exports"` points at `src/index.ts`) and have no build step. Node runs them with type stripping; Vite and tsdown bundle them. `tsdown` builds only the CLI and the sandbox agent.
 - Import extensions: in packages and Vite/tsdown apps, relative imports end in `.ts`; in Nest apps (api, worker, gateway, compiled by SWC), they end in `.js`.
 - NestJS stays on 11 until `nestjs-zod` supports 12. TypeScript stays on 6 until the tooling supports the native TypeScript 7 compiler.
-- Dependencies are pinned to exact versions (`save-exact` in `.npmrc`). Updates come through grouped Dependabot PRs.
+- Dependencies are pinned to exact versions (`saveExact` in `pnpm-workspace.yaml`). Updates come through grouped Dependabot PRs.
 
 ## Dependencies
 

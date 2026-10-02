@@ -6,3 +6,5 @@ allowBuilds:
   '@swc/core': true
   esbuild: true
   protobufjs: true
+
+saveExact: true
