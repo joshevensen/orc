@@ -1,13 +1,13 @@
 # Orc — Architecture
 
-This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0022) are referenced throughout.
+This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0024) are referenced throughout.
 
 ## 1. Principles
 
 1. **The core is learning and quality; everything else is replaceable** (0005). Lessons, evals, verification, specifications, and policy are built to last. The coding agent, sandbox, model, and triggers sit behind interfaces.
 2. **The agent proposes; Orc acts** (0009). Nothing the AI produces touches the outside world without passing deterministic checks outside the sandbox.
 3. **Rigid safety, flexible behaviour.** Workflows stay thin. Limits, permissions, and checks are code; what the agent knows and how it works is skills and lessons.
-4. **Isolation in depth.** Organization data is isolated in the database (0014); runs are isolated in sandboxes (0018); credentials never enter a sandbox (0019).
+4. **Isolation in depth.** Organization data is isolated in the database (0014); runs are isolated in sandboxes (0024); credentials never enter a sandbox (0019).
 5. **Everything is an API first** (FR-54, C-5). The web UI and CLI are clients of the same OpenAPI spec.
 
 ## 2. System overview
@@ -20,7 +20,7 @@ flowchart LR
     JIRAU[Jira users]
   end
 
-  subgraph Orc["Orc (self-managed Kubernetes)"]
+  subgraph Orc["Orc (EKS, our AWS account)"]
     API[API<br/>NestJS]
     MCP[MCP server<br/>lessons and skills]
     TEMP[(Temporal)]
@@ -28,14 +28,14 @@ flowchart LR
     ACT[Action service]
     GW[LLM gateway]
     DB[(Postgres<br/>RLS + pgvector)]
-    subgraph SB["Sandbox node pool (gVisor)"]
+    subgraph SB["Sandbox node pool (gVisor, Karpenter)"]
       S1[Run sandbox<br/>agent + repo]
     end
   end
 
   JIRA[Jira]
   GH[GitHub<br/>code and issues]
-  LLM[LLM provider<br/>Bedrock, Anthropic API, or DO Inference]
+  LLM[LLM provider<br/>Bedrock or Anthropic API]
   MAIL[Email]
   SK[Skills repo]
   EXT[Other agents]
@@ -82,7 +82,6 @@ packages/
   code-host-github/
   models-bedrock/
   models-anthropic/
-  models-digitalocean/
   notifications-email/
   object-store-s3/
   sandbox-k8s/
@@ -131,7 +130,7 @@ Starts workflows, answers questions, approves, talks with Orc. Uses only the gen
 | `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests, line and file review comments, stacked pull requests, CI status, events |
 | `Notifications` | `notifications-email` | Deliver messages and digests (FR-79, FR-80) |
 | `IdentityProvider` | OIDC | Sign-in, user directory |
-| `LlmProvider` | `models-bedrock`, `models-anthropic`, `models-digitalocean` | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
+| `LlmProvider` | `models-bedrock`, `models-anthropic` | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
 | `ObjectStore` | `object-store-s3` | Store and delete screenshots, evidence, and attachments, scoped by organization (Q-DAT-2) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
 | `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types (0011) |
@@ -195,8 +194,9 @@ flowchart LR
   AG -- requests only --> REQ --> AS -- with Orc's credentials --> EXT
 ```
 
-### Sandbox (0018)
-- Agent Sandbox with gVisor (0018), on a dedicated node pool with **no cloud credentials** and the **instance metadata address blocked** by network policy.
+### Sandbox (0024)
+- Agent Sandbox with gVisor, on a dedicated node pool that Karpenter scales with demand, down to zero, up to a capacity limit. Runs beyond that limit wait in Temporal.
+- Pods get **no AWS credentials** and **can't reach the instance metadata service**.
 - Network policies allow only the gateway, package registries, and other Admin-allowlisted destinations; everything else is blocked and logged (Q-SEC-5).
 - The repo is cloned with a short-lived, read-only token minted by Orc for that repo only, which is removed after checkout.
 
@@ -249,7 +249,7 @@ flowchart LR
 
 ## 10. Data
 
-Postgres (managed or self-run; any with RLS and pgvector, 0017). Every table has `org_id` with row-level security (0014).
+Postgres on RDS, with pgvector (0023). Every table has `org_id` with row-level security (0014).
 
 Main entities:
 
@@ -271,13 +271,13 @@ Main entities:
 
 ## 11. Deployment
 
-Self-managed Kubernetes, k3s to start, reference deployment on DigitalOcean Droplets (0017):
+EKS in our AWS account (0023):
 
 | Namespace / group | Runs |
 |---|---|
 | `orc` | API, workers, web UI, LLM gateway with its Presidio Analyzer sidecar |
-| `temporal` | Temporal server (Helm), Postgres for persistence |
-| `orc-sandboxes` on a dedicated node pool | Agent Sandbox controller, warm pools, run sandboxes (gVisor) |
+| `temporal` | Temporal server (Helm), RDS Postgres for persistence |
+| `orc-sandboxes` on a Karpenter-provisioned node pool | Agent Sandbox controller, warm pools, run sandboxes (gVisor) |
 
 - **Images:** per-repo sandbox images with dependencies pre-installed, rebuilt on a schedule, so a sandbox starts close to ready (Q-PERF-1).
 - **Environments:** a non-production copy uses its own GitHub App and a repo or label filter (GitHub) and Jira project filter so it never acts on production work (Q-OPS-1).
@@ -294,8 +294,7 @@ Self-managed Kubernetes, k3s to start, reference deployment on DigitalOcean Drop
 These assumptions carry the most risk. Each should be tested before building on it:
 
 1. **Agent SDK through the gateway** (0011): the Claude Agent SDK can send model calls to Orc's gateway (Anthropic-compatible API) instead of directly to a provider.
-2. **Agent Sandbox** (0018): pause and resume keep state; warm-pool start time; gVisor runs on the reference node image and runs the repos' build and test tools.
+2. **Agent Sandbox** (0024): pause and resume keep state; warm-pool and Karpenter node start times; gVisor runs on the EKS node image and runs the repos' build and test tools.
 3. **PII masking** (0019): Orc's own masking quality and latency on realistic work item, code, and log content; Presidio false positives on code; masking stays deterministic so prompt caching still works; placeholders are restored correctly in streamed responses (0022).
 4. **Copying commits out** (0009): reliably extracting and verifying commits from the sandbox, including for submodule repos (FR-31).
-5. **DigitalOcean provider** (0019): translation from the gateway's Anthropic-compatible API to DO's OpenAI-compatible endpoints preserves tool use, caching, and thinking.
-6. **Reference Postgres** (0017): RLS and pgvector on the chosen managed Postgres.
+5. **RDS Postgres** (0023): RLS and pgvector behave as designed on RDS.

@@ -1,6 +1,6 @@
 # 0006 — Durable runs on self-hosted Temporal
 
-**Status:** Accepted (hosting amended by 0017) · **Date:** 2026-10-01
+**Status:** Accepted (hosting amended by 0023) · **Date:** 2026-10-01
 
 ## Context
 Runs last an hour or more, pause for hours waiting on people, must survive restarts without being lost or done twice (Q-REL-1), resume where they left off (FR-9), be cancellable (FR-10), and enforce retry limits (FR-13).

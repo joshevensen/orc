@@ -37,9 +37,9 @@ Prefer the platform (Node and browser built-ins, `fetch`, `Intl`, `crypto`) over
 | Web | `vite`, `@vitejs/plugin-react`, `@tanstack/react-router`, `@tanstack/router-plugin`, `@tanstack/react-query`, `@tanstack/react-table`, `recharts`, `react-markdown`, `remark-gfm`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, shadcn/ui (copied components and their Radix dependencies), `tailwindcss`, `@tailwindcss/vite`, `@tabler/icons-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css` (the shadcn CLI runs through `pnpm dlx shadcn`, not installed) |
 | CLI | `commander` |
 | Markdown (server) | `unified`, `remark-parse`, `remark-gfm`, `@types/mdast` (Orc's own Markdown ↔ Jira ADF converter lives in `issue-tracker-jira`) |
-| Object storage | `@aws-sdk/client-s3` (S3-compatible: DigitalOcean Spaces, S3, MinIO), only in `object-store-s3` |
+| Object storage | `@aws-sdk/client-s3` (S3, or MinIO locally), only in `object-store-s3` |
 | Code host and issue trackers | `octokit`, `jira.js` |
-| LLM providers and agent | `@anthropic-ai/sdk`, `@anthropic-ai/bedrock-sdk`, `@anthropic-ai/claude-agent-sdk`, `openai` (DigitalOcean only) |
+| LLM providers and agent | `@anthropic-ai/sdk`, `@anthropic-ai/bedrock-sdk`, `@anthropic-ai/claude-agent-sdk` |
 | Sandbox | `@kubernetes/client-node` |
 | Auth | `openid-client` |
 | MCP | `@modelcontextprotocol/sdk` |

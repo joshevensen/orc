@@ -1,6 +1,6 @@
 # 0018 — Execution environments on Agent Sandbox with gVisor, on our own nodes
 
-**Status:** Accepted, verify early · **Date:** 2026-10-02 · **Supersedes:** 0008
+**Status:** Superseded by 0024 · **Date:** 2026-10-02 · **Supersedes:** 0008
 
 ## Context
 Each run needs its own isolated place to install, build, test, and run code (FR-63), which survives pauses (FR-64), starts fast (Q-PERF-1), and can reach only allowed network destinations (Q-SEC-5). 0008 chose Agent Sandbox with gVisor on EKS. Hosting is now self-managed Kubernetes (0017), so we control the node runtime.
