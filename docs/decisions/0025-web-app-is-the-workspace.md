@@ -7,7 +7,7 @@
 
 ## Decision
 - **The web app is the main interface.** There is no CLI in v1. The API stays complete and documented (FR-54), so a CLI can return later.
-- **Work is organized around tasks, not sessions.** A task is a work item: either created in Orc (choose the repos, describe the work; Orc creates the item in the issue tracker) or created by a project manager in the tracker. The navigation lists tasks grouped by state: needs you, queued or running, ready for review, done.
+- **Work is organized around tasks, not sessions.** A task is a work item: either created in Orc (choose the repo — one per task, 0026 — describe the work; Orc creates the item in the issue tracker) or created by a project manager in the tracker. The navigation lists tasks grouped by state: needs you, queued or running, ready for review, done.
 - **The issue tracker is the record.** Project managers plan there. Orc reads items and writes back status, comments, and proposed edits (FR-14); it doesn't become a second place to edit items.
 - **Runs start only from Orc**, by an explicit action in the web app (FR-8). Tracker events update tasks but don't start runs. This settles the trigger-model question.
 - **Asynchronous, not live.** People don't steer a run while it works. They answer questions and review at checkpoints, then request changes, which start follow-up runs (FR-78).

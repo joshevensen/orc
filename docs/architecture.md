@@ -1,6 +1,6 @@
 # Orc — Architecture
 
-This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0025) are referenced throughout.
+This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0026) are referenced throughout.
 
 ## 1. Principles
 
@@ -95,7 +95,7 @@ The skills live in a **separate repo** (0012).
 ## 4. Components
 
 ### API (`apps/api`)
-NestJS, one module per domain: organizations and setup, people and identity, work items, runs, approvals, conversations, policy, lessons, skills, evals, usage and cost, audit, webhooks, MCP.
+NestJS, one module per domain: organizations and setup, people and identity, work items, runs, approvals, messages, policy, lessons, skills, evals, usage and cost, audit, webhooks, MCP.
 - Produces the OpenAPI spec with `@nestjs/swagger` (C-5).
 - Receives Jira and GitHub webhooks, normalizes them into Orc events, and maps the actor to a known person (FR-4, FR-5). Tracker events update tasks; they never start runs. Only explicit actions in the web app start or signal runs (FR-6, FR-8).
 - Signs people in through the organization's identity provider over OIDC (FR-58).
@@ -113,7 +113,7 @@ A small service the sandbox can reach, and the only route to a model. See §7.
 Serves approved lessons and skills to other agents (FR-74), with the same access rules as the API (FR-75). Built with the MCP TypeScript SDK, hosted in the API.
 
 ### Web UI (`apps/web`)
-Orc's workspace (FR-56, 0025; layout and behaviour in [interface.md](interface.md)): tasks grouped by state, task creation, run history, review of developed changes before any pull request (diff, line comments, evidence), approvals, conversations, insights, and settings. A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
+Orc's workspace (FR-56, 0025; layout and behaviour in [interface.md](interface.md)): tasks grouped by state, task creation, run history, review of each workflow's output before anything leaves Orc, approvals, run records, insights, and settings. A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
 
 ## 5. Integration contracts
 
@@ -128,7 +128,7 @@ Orc's workspace (FR-56, 0025; layout and behaviour in [interface.md](interface.m
 | `LlmProvider` | `models-bedrock`, `models-anthropic`; `models-fake` for development and tests | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
 | `ObjectStore` | `object-store-s3` | Store and delete screenshots, evidence, and attachments, scoped by organization (Q-DAT-2) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
-| `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types (0011) |
+| `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types, returning results, action requests, and decision records (FR-77, 0011) |
 
 The API and workers depend only on `contracts`; Nest dependency injection selects the implementation.
 
@@ -220,7 +220,7 @@ Work item text, comments, repo content, and conversations are always data in the
 
 ```mermaid
 flowchart LR
-  SRC[Comments, reviews,<br/>spec edits, conversations<br/>on Orc's own work] --> DET[Detect recurring patterns]
+  SRC[Comments, reviews,<br/>spec and manual edits<br/>on Orc's own work] --> DET[Detect recurring patterns]
   DET --> PROP[Proposed lesson<br/>with source links]
   PROP --> APPR{Manager or<br/>Admin approves?}
   APPR -- no --> X[Discarded]
@@ -231,7 +231,7 @@ flowchart LR
   USE --> TRACE[Run records lessons applied]
 ```
 
-- **Capture** (FR-67, FR-73, FR-81): review comments made in Orc, comment and review events on Orc's own work items and pull requests, edits to its specifications, and conversations are stored as signals.
+- **Capture** (FR-67, FR-73, FR-81): review comments made in Orc, comment and review events on Orc's own work items and pull requests, edits to its specifications, manual edits during change review (FR-91), and replies to Orc's messages are stored as signals.
 - **Detect:** a scheduled workflow groups similar signals and proposes a lesson once a pattern recurs, linking to its sources. Conflicting signals become a conflict for a person (FR-72).
 - **Approve** (FR-68): any Manager or Admin.
 - **Measure** (FR-70): run the affected skills' eval cases with and without the lesson; reject if worse.
@@ -257,9 +257,10 @@ Main entities:
 | Repo, Repo settings, Product mapping | Build-and-check settings, Admin context, policy (FR-2, FR-3, FR-25, FR-26) |
 | Task (work item reference) | Pointer to the tracker's item, plus Orc's task state; Orc doesn't own work items (FR-6, FR-89) |
 | Change review, Change-review comment | A person's review in Orc of a developed change before any pull request: the decision and their line comments (FR-90). Distinct from Orc's review comments on a proposed change. |
-| Run, Step, Action request, Action record | Full trace of what happened and why (FR-47, Q-AUD-1) |
-| Proposed change | Pull requests per run, stack membership, watch state |
-| Conversation, Message | Linked to runs and work items (FR-77–FR-81) |
+| Run, Step, Decision record, Action request, Action record | Full trace of what happened and why. Each step writes decision records (what was decided, the reason, what was checked, lessons used) as it goes (FR-47, FR-77, Q-AUD-1) |
+| Proposed change | The task's pull request (or stack) in its one repo, watch state (FR-32) |
+| Message | Orc's messages and questions to people, and their replies, linked to the task and run (FR-79–FR-81) |
+| Task link | Links between tasks, e.g. the per-repo parts of cross-repo work (FR-32) |
 | Signal, Lesson, Lesson version, Lesson use | Learning system; embeddings in pgvector |
 | Skill release, Model version, Eval case, Eval result | Quality system |
 | Policy, Approval, Spending cap, Pause flag | Human control |

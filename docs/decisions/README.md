@@ -31,3 +31,4 @@ Requirement IDs (FR-, Q-, C-) refer to [requirements.md](../requirements.md).
 | [0023](0023-host-on-eks.md) | Host Orc on EKS in AWS; drop DigitalOcean | Accepted |
 | [0024](0024-sandboxes-on-eks-karpenter.md) | Execution environments on EKS with Agent Sandbox, gVisor, and Karpenter | Accepted, verify early |
 | [0025](0025-web-app-is-the-workspace.md) | The web app is Orc's workspace; no CLI; review happens in Orc before the PR | Accepted |
+| [0026](0026-one-repo-per-task-and-run-records.md) | One repo per task; run records instead of conversation | Accepted |
