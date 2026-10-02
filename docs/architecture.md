@@ -1,6 +1,6 @@
 # Orc — Architecture
 
-This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0021) are referenced throughout.
+This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0022) are referenced throughout.
 
 ## 1. Principles
 
@@ -210,7 +210,7 @@ Each step of each workflow declares the action types it may request:
 The agent's tools write requests; they don't act. The Action service checks each request (type, target, policy, then deterministic checks) and performs it, or rejects it, stops the run, and flags it (Q-SEC-7). For git, Orc copies the commits out of the sandbox, checks them, and pushes them itself.
 
 ### LLM gateway (0010)
-For every model request: authenticate the sandbox by run, mask PII with Orc's own masking (Q-SEC-3), enforce the approved model version (FR-82) and spending cap (FR-48), forward through the organization's `LlmProvider` (0019), and record tokens, cost, and masked PII types (FR-47).
+For every model request: authenticate the sandbox by run, mask PII using the Presidio Analyzer sidecar with consistent per-run placeholders (Q-SEC-3, 0022), enforce the approved model version (FR-82) and spending cap (FR-48), forward through the organization's `LlmProvider` (0019), record tokens, cost, and masked PII types (FR-47), and restore real values in the response before it reaches the sandbox (0022).
 
 ### Untrusted input (Q-SEC-1)
 Work item text, comments, repo content, and conversations are always data in the agent's context, never instructions to Orc's own code. Content that looks like an attempt to steer Orc is flagged (Q-SEC-7), but the boundary above is what stops it.
@@ -272,7 +272,7 @@ Self-managed Kubernetes, k3s to start, reference deployment on DigitalOcean Drop
 
 | Namespace / group | Runs |
 |---|---|
-| `orc` | API, workers, web UI, LLM gateway |
+| `orc` | API, workers, web UI, LLM gateway with its Presidio Analyzer sidecar |
 | `temporal` | Temporal server (Helm), Postgres for persistence |
 | `orc-sandboxes` on a dedicated node pool | Agent Sandbox controller, warm pools, run sandboxes (gVisor) |
 
@@ -292,7 +292,7 @@ These assumptions carry the most risk. Each should be tested before building on 
 
 1. **Agent SDK through the gateway** (0011): the Claude Agent SDK can send model calls to Orc's gateway (Anthropic-compatible API) instead of directly to a provider.
 2. **Agent Sandbox** (0018): pause and resume keep state; warm-pool start time; gVisor runs on the reference node image and runs the repos' build and test tools.
-3. **PII masking** (0019): Orc's own masking quality and latency on realistic work item, code, and log content; candidate engine is Presidio as a gateway sidecar. Masking must be deterministic so prompt caching still works.
+3. **PII masking** (0019): Orc's own masking quality and latency on realistic work item, code, and log content; Presidio false positives on code; masking stays deterministic so prompt caching still works; placeholders are restored correctly in streamed responses (0022).
 4. **Copying commits out** (0009): reliably extracting and verifying commits from the sandbox, including for submodule repos (FR-31).
 5. **DigitalOcean provider** (0019): translation from the gateway's Anthropic-compatible API to DO's OpenAI-compatible endpoints preserves tool use, caching, and thinking.
 6. **Reference Postgres** (0017): RLS and pgvector on the chosen managed Postgres.

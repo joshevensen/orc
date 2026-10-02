@@ -27,3 +27,4 @@ Requirement IDs (FR-, Q-, C-) refer to [requirements.md](../requirements.md).
 | [0019](0019-provider-neutral-llm-gateway.md) | A provider-neutral LLM gateway | Accepted, verify early |
 | [0020](0020-github-issues-as-issue-tracker.md) | GitHub Issues and Jira are the v1 issue trackers | Accepted |
 | [0021](0021-application-stack.md) | Application stack and dependency policy | Accepted |
+| [0022](0022-pii-masking-presidio.md) | PII masking with Presidio; real values restored in responses | Accepted, verify early |

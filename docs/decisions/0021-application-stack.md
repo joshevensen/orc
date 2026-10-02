@@ -37,4 +37,4 @@ The web app has no server of its own. It is served as static files from the same
 - The web app deploys as static files; same-origin serving avoids CORS.
 - No server-side rendering. Revisit only if a real need appears.
 - Changing the embedding model means re-embedding stored lessons and signals.
-- The PII masking engine (0019) is still undecided; Presidio as a sidecar to the gateway is the leading candidate.
+- PII masking uses Presidio as a gateway sidecar (0022).
