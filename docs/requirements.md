@@ -145,6 +145,8 @@ Givens, not choices:
   * When the fix needs code, Orc adds a proposed fix to the work item, written so that Develop can start from it once a person has reviewed it.
   * When the fix needs no code (e.g. it's already deployed, or needs a manual action), Orc says so instead.
 * **FR-18 — Document:** turn a documentation request and its sources into a draft that is accurate to the code and sources and consistent with the organization's knowledge sources. Never publishes.
+  * Documentation that lives in the task's repo becomes a change that goes through change review (FR-90) and Ship like code; a person merges it.
+  * Documentation that lives elsewhere (help center, knowledge base) is attached to the work item as an approved draft and can be downloaded as Markdown; a person publishes it. [later: publishing to external documentation tools through an integration contract.]
 
 ### Reviewability
 
@@ -352,7 +354,6 @@ How an organization knows Orc is working:
 ## 9. Open questions ⚠️
 
 * **Workflows per role:** which workflows can each role work on? For example, can Support start Develop, or only Investigate? (Feeds FR-57.)
-* **Document scope:** which destinations (e.g. help center, internal knowledge base) are in v1?
 * **Custom workflows:** should organizations eventually define their own workflows?
 * **Web interface in v1:** everything in FR-56 at launch, or run history and settings first, with trends and quality views after?
 * **Machine identity:** how do automated parts of Orc and its integrations prove who they are?

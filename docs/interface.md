@@ -90,8 +90,24 @@ Three tabs: **Output**, **Evidence**, and **History**. The Output tab adapts to 
 | **Spec** | The proposed edits to the item's description, as a before-and-after view | Accept (writes to the tracker), edit, or reject (FR-14) |
 | **Develop** | The code change (below) | Change review: approve or request changes (FR-90) |
 | **Ship** | The pull request: status, CI, and reviewer activity from GitHub | Revise when CI fails or a reviewer asks for changes (FR-16, FR-86) |
-| **Investigate** | The finding: confirmed root cause (or what's still unknown), whether it was reproduced, the recommended next step, and which repos were examined (FR-17, FR-32) | Accept, ask a follow-up, or escalate |
-| **Document** | The draft, rendered, with a diff against the previous draft | Comment, request changes, or approve; Orc never publishes (FR-18) |
+| **Investigate** | The finding: confirmed root cause (or what's still unknown), whether it was reproduced, the recommended next step, and which repos were examined (FR-17, FR-32) | **Accept finding**, **Escalate to engineering**, **Ask a follow-up** (below) |
+| **Document** | The draft, rendered, with a diff against the previous draft | Comment, request changes, or approve; approval hands the draft on but Orc never publishes (below, FR-18) |
+
+**Investigate findings** (FR-17). The actions follow the kind of finding:
+
+| Finding | Action | What happens |
+|---|---|---|
+| Root cause found, needs code | **Accept finding** | The finding and its proposed fix are written to the tracker item. The task returns to New with **Start Develop** available; accepting never starts Develop itself (FR-19). |
+| Root cause found, no code needed (already fixed, or a manual action) | **Accept finding** | The finding is posted to the tracker and the task is marked Done. |
+| Questions for the reporter | (automatic) | Orc posts the questions to the tracker item and the task waits for input. |
+| Orc couldn't get far enough | **Escalate to engineering** | The task is assigned to an Engineer or the repo's team, appears under their Needs you, and a tracker comment says why. |
+
+On any finding, **Ask a follow-up** works like Request changes: Orc restates what it will investigate next and runs only once the person confirms (FR-78). There's no separate reject; disagreeing is a follow-up.
+
+**Document drafts** (FR-18). Where an approved draft goes depends on where the documentation lives:
+- **In the task's repo** (a README, a `docs/` folder): the draft becomes a change in the repo and goes through change review and Ship like code. A person merges it.
+- **Anywhere else** (help center, knowledge base): the approved draft is attached to the tracker item and can be downloaded as Markdown. A person publishes it.
+- Publishing to external documentation tools is [later], behind a new integration contract.
 
 **Code changes** (Develop):
 - **One file per page.** A dropdown lists the changed files; next and previous buttons and keyboard shortcuts move between them. When the change is a stack of pull requests, a stack selector sits above the file dropdown.
@@ -161,4 +177,3 @@ The control panel shows the actions for the current state.
 - **Live updates:** refresh by polling through TanStack Query, or have the API push run updates (server-sent events)?
 - **What's in v1:** all of §8 at launch, or setup, tasks, and settings first, with Insights and Learning after?
 - **Notifications in the app:** a bell and unread counts, or rely on "Needs you" plus email?
-- **Investigate and Document actions:** what "accept" and "escalate" do for an Investigate finding, and where an approved Document draft goes (see the Document scope question in requirements §9).
