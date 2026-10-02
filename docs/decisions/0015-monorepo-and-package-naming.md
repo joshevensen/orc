@@ -1,6 +1,6 @@
 # 0015 — pnpm monorepo; packages named by kind, then vendor
 
-**Status:** Accepted · **Date:** 2026-10-01
+**Status:** Accepted (package list amended by 0019, 0020) · **Date:** 2026-10-01
 
 ## Context
 Orc has several apps (API, worker, web UI, CLI) sharing contracts and integrations. The stack is TypeScript, NestJS, and React.

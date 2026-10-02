@@ -1,6 +1,6 @@
 # 0010 — All model calls go through an Orc LLM gateway
 
-**Status:** Accepted · **Date:** 2026-10-01
+**Status:** Superseded by 0019 · **Date:** 2026-10-01
 
 ## Context
 The agent runs inside the sandbox but needs a model. Putting Bedrock credentials in the sandbox would break 0009. Orc also needs one place to record cost (FR-47), apply spending caps (FR-48), pin model versions (FR-82), and keep PII out of model context (Q-SEC-3).

@@ -1,6 +1,6 @@
 # 0007 — Host Orc on EKS in our own AWS account
 
-**Status:** Accepted · **Date:** 2026-10-01
+**Status:** Superseded by 0017 · **Date:** 2026-10-01
 
 ## Context
 Orc needs to run long-lived services, Temporal, and many isolated execution environments. Code and model usage should stay in our own AWS account (C-3).

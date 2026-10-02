@@ -1,6 +1,6 @@
 # Orc — Architecture
 
-This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0016) are referenced throughout.
+This document says **how Orc is built**. What Orc must do is in [requirements.md](requirements.md); why each major choice was made is in [decisions/](decisions/README.md). Requirement IDs (FR-, Q-, C-) and decision numbers (0001–0020) are referenced throughout.
 
 ## 1. Principles
 
@@ -17,10 +17,9 @@ flowchart LR
   subgraph People
     WEB[Web UI]
     CLI[CLI]
-    JIRAU[Jira users]
   end
 
-  subgraph Orc["Orc (EKS, our AWS account)"]
+  subgraph Orc["Orc (self-managed Kubernetes)"]
     API[API<br/>NestJS]
     MCP[MCP server<br/>lessons and skills]
     TEMP[(Temporal)]
@@ -28,22 +27,19 @@ flowchart LR
     ACT[Action service]
     GW[LLM gateway]
     DB[(Postgres<br/>RLS + pgvector)]
-    subgraph SB["Sandbox node group (gVisor)"]
+    subgraph SB["Sandbox node pool (gVisor)"]
       S1[Run sandbox<br/>agent + repo]
     end
   end
 
-  JIRA[Jira]
-  GH[GitHub]
-  BR[Bedrock<br/>+ Guardrails]
+  GH[GitHub<br/>code and issues]
+  LLM[LLM provider<br/>Bedrock or DO Inference]
   MAIL[Email]
   SK[Skills repo]
   EXT[Other agents]
 
   WEB --> API
   CLI --> API
-  JIRAU --> JIRA
-  JIRA -- webhooks --> API
   GH -- webhooks --> API
   API --> DB
   API --> TEMP
@@ -51,11 +47,10 @@ flowchart LR
   WRK --> DB
   WRK --> S1
   S1 -- model calls only --> GW
-  GW --> BR
+  GW --> LLM
   S1 -- action requests --> WRK
   WRK --> ACT
   ACT --> GH
-  ACT --> JIRA
   ACT --> MAIL
   WRK -. reads approved releases .-> SK
   EXT --> MCP
@@ -74,9 +69,10 @@ apps/
   cli/        thin client of the API
 packages/
   contracts/            integration interfaces and shared types only
-  issue-tracker-jira/
+  issue-tracker-github/
   code-host-github/
   models-bedrock/
+  models-digitalocean/
   notifications-email/
   sandbox-k8s/
   api-client/           generated from the OpenAPI spec
@@ -93,14 +89,14 @@ The skills live in a **separate repo** (0012).
 ### API (`apps/api`)
 NestJS, one module per domain: organizations and setup, people and identity, work items, runs, approvals, conversations, policy, lessons, skills, evals, usage and cost, audit, webhooks, MCP.
 - Produces the OpenAPI spec with `@nestjs/swagger` (C-5).
-- Receives Jira and GitHub webhooks, normalizes them into Orc events, maps the actor to a known person (FR-4, FR-5), and decides whether the event is an explicit action (FR-8). Only explicit actions start or signal runs.
+- Receives GitHub webhooks, normalizes them into Orc events, maps the actor to a known person (FR-4, FR-5), and decides whether the event is an explicit action (FR-8). Only explicit actions start or signal runs.
 - Signs people in through the organization's identity provider over OIDC (FR-58).
 
 ### Workers (`apps/worker`)
 Temporal workers. **Workflows** (deterministic) hold run state and control flow; **activities** do anything with side effects: sandbox operations, model-driven agent sessions, action execution, external API calls.
 
 ### Action service
-A module the workers call. The only code in Orc that holds write credentials for GitHub, Jira, and email (Q-SEC-4). See §7.
+A module the workers call. The only code in Orc that holds write credentials for GitHub and email (Q-SEC-4). See §7.
 
 ### LLM gateway
 A small service the sandbox can reach, and the only route to a model. See §7.
@@ -120,11 +116,11 @@ Starts workflows, answers questions, approves, talks with Orc. Uses only the gen
 
 | Contract | v1 implementation | Responsible for |
 |---|---|---|
-| `IssueTracker` | `issue-tracker-jira` | Read work items, comments, attachments; post comments and proposed edits in native format (FR-53); receive events |
+| `IssueTracker` | `issue-tracker-github` | Read work items, comments, attachments; post comments and proposed edits in native format (FR-53); receive events |
 | `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests, line and file review comments, stacked pull requests, CI status, events |
 | `Notifications` | `notifications-email` | Deliver messages and digests (FR-79, FR-80) |
 | `IdentityProvider` | OIDC | Sign-in, user directory |
-| `LlmProvider` | `models-bedrock` | Model calls, guardrails, usage reporting; used only by the gateway |
+| `LlmProvider` | `models-bedrock`, `models-digitalocean` | Authenticate, translate, and forward model calls; usage reporting; used only by the gateway (0019) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
 | `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types (0011) |
 
@@ -141,7 +137,7 @@ sequenceDiagram
   participant T as Temporal workflow
   participant SB as Sandbox
   participant AS as Action service
-  participant X as GitHub / Jira
+  participant X as GitHub
 
   P->>API: explicit action (start)
   API->>T: start run
@@ -180,15 +176,15 @@ flowchart LR
   GW[LLM gateway<br/>PII masking, model pinning, cost]
   REQ[Action requests]
   AS[Action service<br/>type, target, policy,<br/>secret scan, dependency check]
-  EXT[GitHub / Jira / Email]
-  BR[Bedrock]
+  EXT[GitHub / Email]
+  BR[LLM provider]
 
   AG -- model calls --> GW --> BR
   AG -- requests only --> REQ --> AS -- with Orc's credentials --> EXT
 ```
 
 ### Sandbox (0008)
-- Agent Sandbox on EKS with gVisor, on a dedicated node group with **no IAM role** and **no access to the instance metadata service**.
+- Agent Sandbox with gVisor (0018), on a dedicated node pool with **no cloud credentials** and the **instance metadata address blocked** by network policy.
 - Network policies allow only the gateway, package registries, and other Admin-allowlisted destinations; everything else is blocked and logged (Q-SEC-5).
 - The repo is cloned with a short-lived, read-only token minted by Orc for that repo only, which is removed after checkout.
 
@@ -205,7 +201,7 @@ Each step of each workflow declares the action types it may request:
 The agent's tools write requests; they don't act. The Action service checks each request (type, target, policy, then deterministic checks) and performs it, or rejects it, stops the run, and flags it (Q-SEC-7). For git, Orc copies the commits out of the sandbox, checks them, and pushes them itself.
 
 ### LLM gateway (0010)
-For every model request: authenticate the sandbox by run, mask PII with Bedrock Guardrails (Q-SEC-3), enforce the approved model version (FR-82) and spending cap (FR-48), forward to Bedrock, and record tokens, cost, and masked PII types (FR-47).
+For every model request: authenticate the sandbox by run, mask PII with Orc's own masking (Q-SEC-3), enforce the approved model version (FR-82) and spending cap (FR-48), forward through the organization's `LlmProvider` (0019), and record tokens, cost, and masked PII types (FR-47).
 
 ### Untrusted input (Q-SEC-1)
 Work item text, comments, repo content, and conversations are always data in the agent's context, never instructions to Orc's own code. Content that looks like an attempt to steer Orc is flagged (Q-SEC-7), but the boundary above is what stops it.
@@ -241,13 +237,13 @@ flowchart LR
 
 ## 10. Data
 
-Postgres on RDS. Every table has `org_id` with row-level security (0014).
+Postgres (managed or self-run; any with RLS and pgvector, 0017). Every table has `org_id` with row-level security (0014).
 
 Main entities:
 
 | Entity | Notes |
 |---|---|
-| Organization, Team, Person, Identity link | Identity links map Jira and GitHub accounts to a person (FR-4) |
+| Organization, Team, Person, Identity link | Identity links map GitHub accounts and sign-in identities to a person (FR-4) |
 | Repo, Repo settings, Product mapping | Build-and-check settings, Admin context, policy (FR-2, FR-3, FR-25, FR-26) |
 | Work item reference | Pointer to the tracker's item; Orc doesn't own work items |
 | Run, Step, Action request, Action record | Full trace of what happened and why (FR-47, Q-AUD-1) |
@@ -258,21 +254,21 @@ Main entities:
 | Policy, Approval, Spending cap, Pause flag | Human control |
 | Usage record | Tokens, cost, masked-PII types per model call |
 
-- **Backups** (Q-DAT-4): RDS point-in-time recovery; lessons are versioned, so bulk changes can be undone without a restore.
+- **Backups** (Q-DAT-4): Postgres point-in-time recovery; lessons are versioned, so bulk changes can be undone without a restore.
 - **Retention and deletion** (Q-DAT-2): a scheduled workflow deletes per organization policy, including embeddings and stored screenshots.
 
 ## 11. Deployment
 
-EKS in our AWS account (0007):
+Self-managed Kubernetes, k3s to start, reference deployment on DigitalOcean Droplets (0017):
 
 | Namespace / group | Runs |
 |---|---|
 | `orc` | API, workers, web UI, LLM gateway |
-| `temporal` | Temporal server (Helm), RDS Postgres for persistence |
-| `orc-sandboxes` on a dedicated node group | Agent Sandbox controller, warm pools, run sandboxes (gVisor) |
+| `temporal` | Temporal server (Helm), Postgres for persistence |
+| `orc-sandboxes` on a dedicated node pool | Agent Sandbox controller, warm pools, run sandboxes (gVisor) |
 
 - **Images:** per-repo sandbox images with dependencies pre-installed, rebuilt on a schedule, so a sandbox starts close to ready (Q-PERF-1).
-- **Environments:** a non-production copy uses its own GitHub App and Jira project filter so it never acts on production work (Q-OPS-1).
+- **Environments:** a non-production copy uses its own GitHub App and a repo or label filter so it never acts on production work (Q-OPS-1).
 - **Deploys:** rolling, with Temporal keeping runs alive across worker restarts (Q-REL-1, Q-REL-2).
 
 ## 12. Observability and audit
@@ -285,7 +281,9 @@ EKS in our AWS account (0007):
 
 These assumptions carry the most risk. Each should be tested before building on it:
 
-1. **Agent SDK through the gateway** (0011): the Claude Agent SDK can send model calls to Orc's gateway instead of directly to Bedrock.
-2. **Agent Sandbox** (0008): pause and resume keep state; warm-pool start time; gVisor runs the repos' build and test tools.
-3. **Guardrails masking** (0010): PII masking quality and latency on realistic work item and log content.
+1. **Agent SDK through the gateway** (0011): the Claude Agent SDK can send model calls to Orc's gateway (Anthropic-compatible API) instead of directly to a provider.
+2. **Agent Sandbox** (0018): pause and resume keep state; warm-pool start time; gVisor runs on the reference node image and runs the repos' build and test tools.
+3. **PII masking** (0019): Orc's own masking quality and latency on realistic work item and log content.
 4. **Copying commits out** (0009): reliably extracting and verifying commits from the sandbox, including for submodule repos (FR-31).
+5. **DigitalOcean provider** (0019): translation from the gateway's Anthropic-compatible API to DO's OpenAI-compatible endpoints preserves tool use, caching, and thinking.
+6. **Reference Postgres** (0017): RLS and pgvector on the chosen managed Postgres.

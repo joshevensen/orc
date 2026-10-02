@@ -1,6 +1,6 @@
 # 0008 — Execution environments on Agent Sandbox with gVisor
 
-**Status:** Accepted, verify early · **Date:** 2026-10-01
+**Status:** Superseded by 0018 · **Date:** 2026-10-01
 
 ## Context
 Each run needs its own isolated place to install, build, test, and run code (FR-63), which survives pauses (FR-64), starts fast (Q-PERF-1), and can reach only allowed network destinations (Q-SEC-5). It must run in our account (0007).

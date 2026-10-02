@@ -22,9 +22,11 @@ importers:
 
   packages/contracts: {}
 
-  packages/issue-tracker-jira: {}
+  packages/issue-tracker-github: {}
 
   packages/models-bedrock: {}
+
+  packages/models-digitalocean: {}
 
   packages/notifications-email: {}
 

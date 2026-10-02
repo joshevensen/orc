@@ -10,7 +10,7 @@ Orc is an organization's engineering memory and quality system for AI-assisted w
 
 To do that, Orc lets a team hand well-defined engineering work to AI, across any of their repos, while humans stay in control of every decision that matters. That work includes specifying, developing, and shipping features, investigating bugs, and drafting documentation. Orc gives the team one place to see what the AI did, what it cost, and whether it was any good.
 
-Orc is for any organization that tracks work in Jira and keeps code on GitHub (GitLab [later]). Each organization's data is isolated from every other's.
+Orc is for any organization that tracks work and keeps code on GitHub (GitLab and other issue trackers [later]). Each organization's data is isolated from every other's.
 
 ### What Orc is built around
 
@@ -26,20 +26,20 @@ Everything else is replaceable and should stay that way: the coding agent, the e
 
 ### Why Orc, given what already exists
 
-Turning a Jira work item into a pull request is now available inside Jira itself and from several vendors, and coding agents are starting to keep their own memory. Orc exists for what those don't give us together:
+Turning an issue into a pull request is now available inside issue trackers and from several vendors, and coding agents are starting to keep their own memory. Orc exists for what those don't give us together:
 
 * learning that spans the organization and teams, not just one user or repo, and covers specifications and decisions as well as code;
 * learning that is measured and approved, not just accumulated;
 * lessons and skills the organization owns and can use with any agent, not locked to one vendor;
 * workflows beyond coding (Spec, Investigate, Document) under one set of rules;
-* AI usage running in, and billed to, our own AWS account;
+* AI usage running in, and billed to, the organization's own account with its LLM provider;
 * skills people can run locally in their own AI tools, identical to what runs in production.
 
 ## 2. Scope
 
-**In scope for v1:** one organization; GitHub; the spec, develop, ship, investigate, and document workflows; a web interface and a command line; notifications through Jira and email.
+**In scope for v1:** one organization; GitHub; the spec, develop, ship, investigate, and document workflows; a web interface and a command line; notifications through GitHub and email.
 
-**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than Jira; LLM providers other than Bedrock; organization-defined custom workflows; long-lived interactive remote environments.
+**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than GitHub Issues; LLM providers other than Bedrock and DigitalOcean Inference; organization-defined custom workflows; long-lived interactive remote environments.
 
 ## 3. Glossary
 
@@ -47,7 +47,7 @@ Turning a Jira work item into a pull request is now available inside Jira itself
 |---|---|
 | **Organization** | A company using Orc. The unit of data isolation. |
 | **Team** | A group of people within an organization. |
-| **Work item** | A Jira work item (task, bug, story, or similar) that Orc works on. |
+| **Work item** | A GitHub issue that Orc works on. |
 | **Workflow** | A kind of work Orc does: Spec, Develop, Ship, Investigate, or Document. |
 | **Run** | One execution of a workflow on one work item, from start until it stops. |
 | **Step** | One unit of work within a run. |
@@ -91,9 +91,9 @@ Any role can hold any level.
 
 Givens, not choices:
 
-* **C-1** — Jira Cloud is the only issue tracker.
+* **C-1** — GitHub Issues is the only issue tracker in v1. Other trackers (e.g. Jira) are [later] and must be possible without reworking the workflows.
 * **C-2** — Repos live on GitHub in v1. GitLab support is [later] and must be possible without reworking the workflows.
-* **C-3** — AWS Bedrock is the only LLM provider in v1, used through **each organization's own AWS account**.
+* **C-3** — The LLM provider is chosen per organization, from AWS Bedrock and DigitalOcean Inference in v1, and used through **the organization's own account** with that provider. Orc itself runs on infrastructure we operate (see Q-ORG-3).
 * **C-4** — Built in TypeScript.
 * **C-5** — Every API is described by an OpenAPI specification.
 * **C-6** — Orc can be operated within a SOC2-audited environment, and gives each organization the controls and evidence its own SOC2 audit needs (see [Audit and compliance](#audit-and-compliance)).
@@ -102,18 +102,18 @@ Givens, not choices:
 
 ### Organizations and setup
 
-* **FR-1** — An organization's Admins can connect Jira, GitHub, email, the organization's identity provider, and the organization's AWS account. All AI usage runs in, and is billed to, the organization's own AWS account. [later: an Operator creates the organization; its Admins then connect everything without Operator help.]
+* **FR-1** — An organization's Admins can connect GitHub, email, the organization's identity provider, and an LLM provider account. All AI usage runs in, and is billed to, the organization's own account with that provider. [later: an Operator creates the organization; its Admins then connect everything without Operator help.]
 * **FR-2** — Admins can describe the organization's products and how they map to repos, so Orc can place work items correctly.
 * **FR-3** — Admins can onboard every repo in the organization in bulk. Orc works out each repo's build-and-check settings from what the repo already contains, verifies them by actually running them, shows a preview of the results, and saves nothing until an Admin confirms.
 
 ### People across systems
 
-* **FR-4** — Orc knows which Jira and GitHub accounts belong to the same person, and uses that person's roles and access level whichever system they act from.
+* **FR-4** — Orc knows which GitHub account and sign-in identity belong to the same person, and uses that person's roles and access level whether they act from GitHub, the command line, or the web interface.
 * **FR-5** — When someone Orc doesn't recognize acts on a work item, Orc does nothing on their behalf and tells them how to get access.
 
 ### Starting, continuing, and stopping work
 
-* **FR-6** — Users can start any workflow from Jira or the command line. ⚠️ Whether "from Jira" uses Jira's own agent-assignment model or Orc's own trigger is open (see §9).
+* **FR-6** — Users can start any workflow from GitHub or the command line. ⚠️ Whether "from GitHub" means assigning the issue to Orc's bot account, a comment command, or both is open (see §9).
 * **FR-7** — A work item has at most one run in progress at a time.
 * **FR-8** — Only an explicit action by a permitted user starts or continues a run. Talking with Orc never does on its own (FR-77). Explicit actions include: starting a workflow, answering Orc's questions and asking it to continue, an approval decision, a reviewer requesting changes on Orc's proposed change, confirming a follow-up request (FR-78), and a CI failure or merge conflict on Orc's own proposed change where Admin policy lets Orc respond to those automatically (FR-86).
 * **FR-9** — When a run continues after stopping for input, Orc picks up where it left off — it doesn't repeat work or re-ask answered questions.
@@ -161,7 +161,7 @@ Givens, not choices:
 ### Human control
 
 * **FR-19** — Orc never merges code, publishes content, or starts a workflow on its own; one workflow never triggers another. Moving a work item from Spec to Develop to Ship is always a person's action.
-* **FR-20** — Admins can require human approval at defined points in a workflow. Anyone whose role allows them to work on that workflow can approve, send back with feedback, or reject — from Jira, the command line, or the web interface.
+* **FR-20** — Admins can require human approval at defined points in a workflow. Anyone whose role allows them to work on that workflow can approve, send back with feedback, or reject — from GitHub, the command line, or the web interface.
 * **FR-21** — When Orc can't proceed, it stops and asks the right person specific questions — including exactly what's wrong with any input it can't use (e.g. a design link that doesn't point at a specific design).
 * **FR-22** — Anything Orc produces for external audiences is a draft until a person publishes it.
 * **FR-83** — Admins can pause Orc instantly for the whole organization, one workflow, or one repo. Runs in progress stop cleanly at once, no new runs start, and everyone affected is told. Only an Admin can resume, and pausing and resuming are recorded for audit.
@@ -244,17 +244,17 @@ Givens, not choices:
 
 * **FR-51** — Orc tailors how it communicates to each person's role — plain language and no code for non-technical roles, technical detail for engineers — and when a message goes to several roles, it gives each what they need.
 * **FR-52** — The right people are told when Orc needs a decision, needs information, or finishes — on the work item, by email, and in the web interface.
-* **FR-53** — Orc writes to Jira in Jira's native formatting.
-* **FR-77** — Users can talk with Orc about any run, during it or after it ends, from Jira, the command line, or the web interface. They can ask what it did, why it made a decision, what it checked, and which lessons it applied. Orc answers from the run's record, says when it doesn't know, and changes nothing while answering.
+* **FR-53** — Orc writes to GitHub in GitHub-flavored Markdown.
+* **FR-77** — Users can talk with Orc about any run, during it or after it ends, from GitHub, the command line, or the web interface. They can ask what it did, why it made a decision, what it checked, and which lessons it applied. Orc answers from the run's record, says when it doesn't know, and changes nothing while answering.
 * **FR-78** — After a run ends, a permitted user can ask Orc for follow-up work on the same work item (e.g. "also handle the empty state"). Orc restates what it will do and which workflow it will use, and starts only once the user confirms. Follow-up work continues from the earlier run's results rather than starting over.
 * **FR-79** — Orc can start a conversation with a user, not only reply. It messages people to ask a question, request a decision, report progress on long runs, flag a risk it found, propose a lesson, or say that a limit or cap was reached. Every message is linked to the work item or run it's about, and the user can reply in the same place.
-* **FR-80** — Each user chooses where Orc reaches them (e.g. Jira mention, email, the web interface) and which kinds of messages they receive right away, receive as a digest, or don't receive. Messages that block work (questions and decisions) can't be turned off, only redirected.
+* **FR-80** — Each user chooses where Orc reaches them (e.g. GitHub mention, email, the web interface) and which kinds of messages they receive right away, receive as a digest, or don't receive. Messages that block work (questions and decisions) can't be turned off, only redirected.
 * **FR-81** — Conversations with Orc are kept with the run they're about. A correction made in conversation can become a proposed lesson (FR-41, FR-67), following the same approval rules as any other lesson.
 
 ### Interfaces
 
 * **FR-54** — Everything a user can do, they can do through a documented API; the command line and the web interface offer nothing the API doesn't.
-* **FR-55** — People who don't use the command line can use Orc fully through Jira and the web interface.
+* **FR-55** — People who don't use the command line can use Orc fully through GitHub and the web interface.
 * **FR-56** — The web interface is for seeing, configuring, and deciding — not for starting workflows. In it, users can:
   * browse runs and see, for any run, what triggered it, each step, what it produced, where it stopped and why, and what it cost;
   * see usage, cost, and quality trends by workflow, team, repo, and over time;
@@ -290,7 +290,7 @@ Givens, not choices:
   * content that can't be safely masked stops the run, and the right person is told what kind of data was found and where, without repeating it;
   * Orc records what kinds of PII it masked for each run, so gaps can be found and the checks improved;
   * what counts as PII, and any stricter rules for particular workflows (e.g. Investigate reading logs), is configurable per organization.
-* **Q-SEC-4** — Execution environments hold no credentials that can write to GitHub, Jira, or any other system. Every external change (push, comment, work item update, message) is made by Orc outside the execution environment, after checking it against policy.
+* **Q-SEC-4** — Execution environments hold no credentials that can write to GitHub or any other system. Every external change (push, comment, work item update, message) is made by Orc outside the execution environment, after checking it against policy.
 * **Q-SEC-5** — Execution environments can reach only the network destinations their work needs (e.g. package registries), from an Admin-managed allowlist. Everything else is blocked and logged.
 * **Q-SEC-6** — Every action Orc takes in an external system is one of a fixed set of kinds declared for that workflow and step (e.g. "comment on this work item", "push to this branch"). Nothing the AI produces can make Orc take an undeclared kind of action or act on a different work item, branch, or repo.
 * **Q-SEC-7** — When content looks like an attempt to steer Orc, Orc stops the run and tells the right person where it was found, rather than quietly ignoring it.
@@ -310,7 +310,7 @@ Givens, not choices:
 
 ### Operability
 
-* **Q-OPS-1** — A non-production copy of Orc can run against the same Jira and repos as production without interfering with it.
+* **Q-OPS-1** — A non-production copy of Orc can run against the same GitHub organization and repos as production without interfering with it.
 * **Q-OPS-2** — Any run can be traced end to end across every part of Orc.
 * **Q-OPS-3** — Changes to Orc can be tested against real systems before they reach production.
 
@@ -320,7 +320,7 @@ Givens, not choices:
 * **Q-ORG-2** — Nothing specific to any one organization is built into Orc; each organization's needs are met through configuration and extensions.
 * **Q-ORG-3** — Orc can be deployed on any infrastructure that can run it; it assumes no specific hosting setup.
 * **Q-ORG-4** — Each external system Orc talks to can be swapped for another of the same kind — including the code host and the provider of execution environments.
-* **Q-ORG-5** — Integrations are extendable. Each kind of integration — issue tracker (Jira), code host (GitHub), notifications (email), identity provider, LLM provider, execution environment, and chat [later] — is defined once as a contract. Adding another integration of the same kind (e.g. GitLab, Linear, Microsoft Teams) means implementing that contract, without changing the workflows or the other integrations. Organizations can run more than one integration of a kind where that makes sense (e.g. GitHub and GitLab side by side).
+* **Q-ORG-5** — Integrations are extendable. Each kind of integration — issue tracker (GitHub Issues), code host (GitHub), notifications (email), identity provider, LLM provider, execution environment, and chat [later] — is defined once as a contract. Adding another integration of the same kind (e.g. GitLab, Linear, Microsoft Teams) means implementing that contract, without changing the workflows or the other integrations. Organizations can run more than one integration of a kind where that makes sense (e.g. GitHub and GitLab side by side).
 
 ## 8. Success measures
 
@@ -345,7 +345,7 @@ How an organization knows Orc is working:
 
 ## 9. Open questions ⚠️
 
-* **Jira trigger model:** Jira now lets work items be assigned to AI agents directly. Should Orc appear as an assignable agent there, use its own trigger (e.g. a label or comment command), or both? (Feeds FR-6, FR-8.)
+* **GitHub trigger model:** should Orc start work when an issue is assigned to its bot account, on a comment command (e.g. a label or `@orc`), or both? (Feeds FR-6, FR-8.)
 * **Workflows per role:** which workflows can each role work on? For example, can Support start Develop, or only Investigate? (Feeds FR-57.)
 * **Document scope:** which destinations (e.g. help center, internal knowledge base) are in v1?
 * **Custom workflows:** should organizations eventually define their own workflows?
