@@ -25,4 +25,4 @@ Requirement IDs (FR-, Q-, C-) refer to [requirements.md](../requirements.md).
 | [0017](0017-self-managed-kubernetes.md) | Self-managed Kubernetes on any infrastructure | Accepted |
 | [0018](0018-execution-environments-self-managed.md) | Execution environments on Agent Sandbox with gVisor, on our own nodes | Accepted, verify early |
 | [0019](0019-provider-neutral-llm-gateway.md) | A provider-neutral LLM gateway | Accepted, verify early |
-| [0020](0020-github-issues-as-issue-tracker.md) | GitHub Issues is the v1 issue tracker | Accepted |
+| [0020](0020-github-issues-as-issue-tracker.md) | GitHub Issues and Jira are the v1 issue trackers | Accepted |

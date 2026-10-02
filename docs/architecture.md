@@ -17,6 +17,7 @@ flowchart LR
   subgraph People
     WEB[Web UI]
     CLI[CLI]
+    JIRAU[Jira users]
   end
 
   subgraph Orc["Orc (self-managed Kubernetes)"]
@@ -32,6 +33,7 @@ flowchart LR
     end
   end
 
+  JIRA[Jira]
   GH[GitHub<br/>code and issues]
   LLM[LLM provider<br/>Bedrock, Anthropic API, or DO Inference]
   MAIL[Email]
@@ -40,6 +42,8 @@ flowchart LR
 
   WEB --> API
   CLI --> API
+  JIRAU --> JIRA
+  JIRA -- webhooks --> API
   GH -- webhooks --> API
   API --> DB
   API --> TEMP
@@ -51,6 +55,7 @@ flowchart LR
   S1 -- action requests --> WRK
   WRK --> ACT
   ACT --> GH
+  ACT --> JIRA
   ACT --> MAIL
   WRK -. reads approved releases .-> SK
   EXT --> MCP
@@ -70,6 +75,7 @@ apps/
 packages/
   contracts/            integration interfaces and shared types only
   issue-tracker-github/
+  issue-tracker-jira/
   code-host-github/
   models-bedrock/
   models-anthropic/
@@ -90,14 +96,14 @@ The skills live in a **separate repo** (0012).
 ### API (`apps/api`)
 NestJS, one module per domain: organizations and setup, people and identity, work items, runs, approvals, conversations, policy, lessons, skills, evals, usage and cost, audit, webhooks, MCP.
 - Produces the OpenAPI spec with `@nestjs/swagger` (C-5).
-- Receives GitHub webhooks, normalizes them into Orc events, maps the actor to a known person (FR-4, FR-5), and decides whether the event is an explicit action (FR-8). Only explicit actions start or signal runs.
+- Receives Jira and GitHub webhooks, normalizes them into Orc events, maps the actor to a known person (FR-4, FR-5), and decides whether the event is an explicit action (FR-8). Only explicit actions start or signal runs.
 - Signs people in through the organization's identity provider over OIDC (FR-58).
 
 ### Workers (`apps/worker`)
 Temporal workers. **Workflows** (deterministic) hold run state and control flow; **activities** do anything with side effects: sandbox operations, model-driven agent sessions, action execution, external API calls.
 
 ### Action service
-A module the workers call. The only code in Orc that holds write credentials for GitHub and email (Q-SEC-4). See §7.
+A module the workers call. The only code in Orc that holds write credentials for GitHub, Jira, and email (Q-SEC-4). See §7.
 
 ### LLM gateway
 A small service the sandbox can reach, and the only route to a model. See §7.
@@ -117,7 +123,7 @@ Starts workflows, answers questions, approves, talks with Orc. Uses only the gen
 
 | Contract | v1 implementation | Responsible for |
 |---|---|---|
-| `IssueTracker` | `issue-tracker-github` | Read work items, comments, attachments; post comments and proposed edits in native format (FR-53); receive events |
+| `IssueTracker` | `issue-tracker-github`, `issue-tracker-jira` | Read work items, comments, attachments; post comments and proposed edits in native format (FR-53); receive events |
 | `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests, line and file review comments, stacked pull requests, CI status, events |
 | `Notifications` | `notifications-email` | Deliver messages and digests (FR-79, FR-80) |
 | `IdentityProvider` | OIDC | Sign-in, user directory |
@@ -138,7 +144,7 @@ sequenceDiagram
   participant T as Temporal workflow
   participant SB as Sandbox
   participant AS as Action service
-  participant X as GitHub
+  participant X as GitHub / Jira
 
   P->>API: explicit action (start)
   API->>T: start run
@@ -177,7 +183,7 @@ flowchart LR
   GW[LLM gateway<br/>PII masking, model pinning, cost]
   REQ[Action requests]
   AS[Action service<br/>type, target, policy,<br/>secret scan, dependency check]
-  EXT[GitHub / Email]
+  EXT[GitHub / Jira / Email]
   BR[LLM provider]
 
   AG -- model calls --> GW --> BR
@@ -244,7 +250,7 @@ Main entities:
 
 | Entity | Notes |
 |---|---|
-| Organization, Team, Person, Identity link | Identity links map GitHub accounts and sign-in identities to a person (FR-4) |
+| Organization, Team, Person, Identity link | Identity links map Jira and GitHub accounts and sign-in identities to a person (FR-4) |
 | Repo, Repo settings, Product mapping | Build-and-check settings, Admin context, policy (FR-2, FR-3, FR-25, FR-26) |
 | Work item reference | Pointer to the tracker's item; Orc doesn't own work items |
 | Run, Step, Action request, Action record | Full trace of what happened and why (FR-47, Q-AUD-1) |
@@ -269,7 +275,7 @@ Self-managed Kubernetes, k3s to start, reference deployment on DigitalOcean Drop
 | `orc-sandboxes` on a dedicated node pool | Agent Sandbox controller, warm pools, run sandboxes (gVisor) |
 
 - **Images:** per-repo sandbox images with dependencies pre-installed, rebuilt on a schedule, so a sandbox starts close to ready (Q-PERF-1).
-- **Environments:** a non-production copy uses its own GitHub App and a repo or label filter so it never acts on production work (Q-OPS-1).
+- **Environments:** a non-production copy uses its own GitHub App and a repo or label filter (GitHub) and Jira project filter so it never acts on production work (Q-OPS-1).
 - **Deploys:** rolling, with Temporal keeping runs alive across worker restarts (Q-REL-1, Q-REL-2).
 
 ## 12. Observability and audit
