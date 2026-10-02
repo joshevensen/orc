@@ -275,6 +275,7 @@ Givens, not choices:
 ### Roles and access
 
 * **FR-57** — What a person may work on comes from their roles; what they may manage comes from their access level, scoped to their teams (Managers) or the whole organization (Admins). Admins can exclude a repo from any workflow.
+  * Which workflows each role may start is set by Admins. Defaults: Engineers start any workflow; Support starts Investigate and Spec; Product starts Spec and Document; Designers start Spec. Anyone who can see a task can see its evidence and design comparison.
 * **FR-58** — People sign in with their organization's existing identity provider.
 
 ## 7. Quality requirements
@@ -353,9 +354,7 @@ How an organization knows Orc is working:
 
 ## 9. Open questions ⚠️
 
-* **Workflows per role:** which workflows can each role work on? For example, can Support start Develop, or only Investigate? (Feeds FR-57.)
 * **Custom workflows:** should organizations eventually define their own workflows?
-* **Web interface in v1:** everything in FR-56 at launch, or run history and settings first, with trends and quality views after?
 * **Machine identity:** how do automated parts of Orc and its integrations prove who they are?
 * **Deployment model [later]:** once Orc serves other organizations — one deployment for many, one per organization, or both?
 * **Cross-organization sharing [later]:** can an organization choose to publish skills for others, or do skills never leave their organization?

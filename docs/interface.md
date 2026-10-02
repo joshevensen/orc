@@ -47,7 +47,7 @@ Three columns. The side columns can be collapsed; the middle column can't.
   - Orc creates the matching item in the issue tracker.
 - **Search** across tasks.
 - **Tasks grouped by state** (§7):
-  - **Needs you:** a question from Orc, an approval, a change ready for your review, or a pull request needing a revision.
+  - **Needs you** (with a count; it's the in-app notification, §9): a question from Orc, an approval, a change ready for your review, or a pull request needing a revision.
   - **Queued or running:** with queue position when waiting for capacity (FR-49).
   - **Ready for review:** work waiting for anyone's review.
   - **Done:** shipped, merged, or closed. Older items are paged.
@@ -148,7 +148,7 @@ The control panel shows the actions for the current state.
 
 | State | Shown in navigation as | Main actions |
 |---|---|---|
-| New (no run yet) | Needs you, for its creator | **Start** (choose the workflow), comment |
+| New (no run yet) | Needs you, for its creator | **Start** (choose from the workflows the person's roles may start, FR-57), comment |
 | Waiting for input | Needs you | **Answer and continue**, comment, **Take over**, cancel |
 | Waiting for approval (FR-20) | Needs you | **Approve**, **Send back with feedback**, **Reject** |
 | Queued | Queued or running | Cancel |
@@ -170,10 +170,10 @@ The control panel shows the actions for the current state.
 - **First-time setup** (FR-1, FR-3): shown to Admins until done. Connect GitHub (the GitHub App), the issue tracker, the identity provider, email, and the LLM provider (plus Bedrock for embeddings when the provider is the Anthropic API, ADR 0023); then onboard repos, where Orc works out and verifies each repo's build-and-check settings.
 - **Insights:** usage, cost, and quality trends by workflow, team, repo, and over time; skill performance and version comparisons (FR-50, FR-56).
 - **Learning:** proposed and active lessons, approvals, and conflicts (FR-68, FR-72).
-- **Settings,** by access level: organization, teams and roles, repos and onboarding (FR-3), products (FR-2), policy and approvals (FR-20), spending caps (FR-48), sandbox slots and warm pool (ADR 0024), integrations, the pause switch (FR-83), and the **audit log** (Q-AUD-1): every action record, approval, policy change, pause, and restore, filterable and exportable.
+- **Settings,** by access level: organization, teams and roles (including which workflows each role may start, FR-57), repos and onboarding (FR-3), products (FR-2), policy and approvals (FR-20), spending caps (FR-48), sandbox slots and warm pool (ADR 0024), integrations, the pause switch (FR-83), and the **audit log** (Q-AUD-1): every action record, approval, policy change, pause, and restore, filterable and exportable.
 
-## 9. Open questions ⚠️
+## 9. Delivery
 
-- **Live updates:** refresh by polling through TanStack Query, or have the API push run updates (server-sent events)?
-- **What's in v1:** all of §8 at launch, or setup, tasks, and settings first, with Insights and Learning after?
-- **Notifications in the app:** a bell and unread counts, or rely on "Needs you" plus email?
+- **v1 order.** First release: first-time setup, tasks (every workflow, with its Output, Evidence, and History tabs), and Settings including the audit log. Second release: Insights and Learning. The navigation shows only what's released.
+- **Live updates.** Polling through TanStack Query: open tasks and the navigation's counts refresh every few seconds while something is queued or running, and slow down when nothing is. Server-sent events are [later], if polling feels slow or costs too much. Designs show "running" and "last updated" states; they don't depend on which mechanism is used.
+- **Notifications.** No bell or notification centre. "Needs you" in the navigation carries a count, and Orc's messages also go by email and tracker mention as each person chooses (FR-80).
