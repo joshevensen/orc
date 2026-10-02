@@ -7,7 +7,7 @@ This document says **how Orc is built**. What Orc must do is in [requirements.md
 1. **The core is learning and quality; everything else is replaceable** (0005). Lessons, evals, verification, specifications, and policy are built to last. The coding agent, sandbox, model, and triggers sit behind interfaces.
 2. **The agent proposes; Orc acts** (0009). Nothing the AI produces touches the outside world without passing deterministic checks outside the sandbox.
 3. **Rigid safety, flexible behaviour.** Workflows stay thin. Limits, permissions, and checks are code; what the agent knows and how it works is skills and lessons.
-4. **Isolation in depth.** Organization data is isolated in the database (0014); runs are isolated in sandboxes (0008); credentials never enter a sandbox (0010).
+4. **Isolation in depth.** Organization data is isolated in the database (0014); runs are isolated in sandboxes (0018); credentials never enter a sandbox (0019).
 5. **Everything is an API first** (FR-54, C-5). The web UI and CLI are clients of the same OpenAPI spec.
 
 ## 2. System overview
@@ -192,7 +192,7 @@ flowchart LR
   AG -- requests only --> REQ --> AS -- with Orc's credentials --> EXT
 ```
 
-### Sandbox (0008)
+### Sandbox (0018)
 - Agent Sandbox with gVisor (0018), on a dedicated node pool with **no cloud credentials** and the **instance metadata address blocked** by network policy.
 - Network policies allow only the gateway, package registries, and other Admin-allowlisted destinations; everything else is blocked and logged (Q-SEC-5).
 - The repo is cloned with a short-lived, read-only token minted by Orc for that repo only, which is removed after checkout.
@@ -209,7 +209,7 @@ Each step of each workflow declares the action types it may request:
 
 The agent's tools write requests; they don't act. The Action service checks each request (type, target, policy, then deterministic checks) and performs it, or rejects it, stops the run, and flags it (Q-SEC-7). For git, Orc copies the commits out of the sandbox, checks them, and pushes them itself.
 
-### LLM gateway (0010)
+### LLM gateway (0019, 0022)
 For every model request: authenticate the sandbox by run, mask PII using the Presidio Analyzer sidecar with consistent per-run placeholders (Q-SEC-3, 0022), enforce the approved model version (FR-82) and spending cap (FR-48), forward through the organization's `LlmProvider` (0019), record tokens, cost, and masked PII types (FR-47), and restore real values in the response before it reaches the sandbox (0022).
 
 ### Untrusted input (Q-SEC-1)
