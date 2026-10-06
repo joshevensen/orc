@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orc · PR review</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&amp;family=Chakra+Petch:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#030302; --bg:#060503; --panel:#0b0a05; --raised:#14120a;
+  --amber:#b8ab3e; --amber-dim:#77701f;
+  --line:#2c2a14; --frame:#4a4730; --frame-hi:#7b7758; --grid:rgba(80,76,30,0.30);
+  --text:#e6e2c8; --muted:#a19d7c; --gutter:#878369;
+  --success:#4fd69c; --error:#ff5a4d; --warning:#ff9a3c; --info:#5fb4ff;
+  --f-display:"Michroma",ui-sans-serif,system-ui,sans-serif;
+  --f-head:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --c:16px;
+}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--amber);text-decoration:none}a:hover{color:#cfc463;text-decoration:underline}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.frame{position:relative;background:var(--frame);padding:1px;display:flex;flex-direction:column;min-height:0;min-width:0;
+  clip-path:polygon(var(--c) 0,100% 0,100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,0 100%,0 var(--c))}
+.frame>.in{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--panel);
+  clip-path:polygon(calc(var(--c) - .5px) 0,100% 0,100% calc(100% - var(--c) + .5px),calc(100% - var(--c) + .5px) 100%,0 100%,0 calc(var(--c) - .5px))}
+.frame.dimline{background:#3a3820}
+.frame.accent{background:var(--amber)}
+.frame.sm{--c:10px}
+
+.plate{display:inline-flex;background:#36341d;padding:0 1px 1px;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,14px 100%)}
+.plate>span{display:flex;align-items:center;gap:8px;height:24px;padding:0 24px;background:var(--raised);
+  font-family:var(--f-display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--text);white-space:nowrap;
+  clip-path:polygon(0 0,100% 0,calc(100% - 13.5px) 100%,13.5px 100%)}
+
+.brk{position:absolute;width:14px;height:14px;pointer-events:none;z-index:3}
+.brk.tr{top:6px;right:6px;border-top:2px solid var(--frame-hi);border-right:2px solid var(--frame-hi)}
+.brk.bl{bottom:6px;left:6px;border-bottom:2px solid var(--frame-hi);border-left:2px solid var(--frame-hi)}
+.frame.accent .brk{border-color:var(--amber)}
+.ticks-x{height:8px;background-image:repeating-linear-gradient(90deg,var(--frame-hi) 0 1px,transparent 1px 8px);opacity:.7}
+
+.label{font-family:var(--f-head);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+
+.btn{height:36px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;border-radius:2px;border:1px solid var(--amber-dim);
+  background:var(--raised);color:var(--text);font:600 14px/1 var(--f-body);transition:border-color .12s,background .12s,color .12s;white-space:nowrap}
+.btn:hover{border-color:var(--amber);background:#201e0d}
+.btn-primary{background:var(--amber);border-color:var(--amber);color:#0f0d04;box-shadow:0 0 16px rgba(184,171,62,.38)}
+.btn-primary:hover{background:#c4b850;border-color:#c4b850}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn-ghost:hover{background:var(--raised);border-color:var(--line);color:var(--text)}
+.btn-danger{background:transparent;border-color:#6b2520;color:var(--error)}
+.btn-danger:hover{border-color:var(--error);background:rgba(255,90,77,.08)}
+.icon-btn{width:36px;padding:0;justify-content:center}
+.navbtn{flex:none;align-self:flex-start;width:60px;height:51px;padding:0 1px 1px;border:0;background:var(--amber-dim);color:var(--text);transition:background .12s,color .12s}
+.navbtn>span{display:flex;align-items:center;justify-content:center;height:100%;background:var(--raised);transition:background .12s}
+.navbtn.prev{margin-right:-18px;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 100%,24px 100%)}
+.navbtn.prev>span{clip-path:polygon(0 0,calc(100% - 23.5px) 0,calc(100% - .5px) 100%,23.5px 100%);padding-right:6px}
+.navbtn.next{margin-left:-18px;clip-path:polygon(24px 0,100% 0,calc(100% - 24px) 100%,0 100%)}
+.navbtn.next>span{clip-path:polygon(23.5px 0,100% 0,calc(100% - 23.5px) 100%,.5px 100%);padding-left:6px}
+.navbtn:hover{background:var(--amber)}
+.navbtn:hover>span{background:#201e0d}
+.navbtn:focus-visible{outline:none;background:var(--amber)}
+.navbtn:focus-visible>span{background:#2a2812}
+.btn:focus-visible,.row-btn:focus-visible,a:focus-visible,.field:focus-visible,.backdrop:focus-visible,.chip:focus-visible{
+  outline:2px solid var(--amber);outline-offset:2px;box-shadow:0 0 0 5px rgba(184,171,62,.16)}
+
+.row-btn{display:flex;gap:10px;width:100%;padding:8px 10px;border:1px solid transparent;border-radius:2px;background:transparent;color:var(--text);text-align:left;font:400 14px/1.4 var(--f-body)}
+.row-btn:hover{background:var(--raised);border-color:var(--line)}
+.row-btn[aria-current="true"]{background:var(--raised);border-color:var(--amber)}
+
+.chip{height:34px;padding:0 12px;border-radius:2px;border:1px solid #706c4e;background:var(--bg);color:var(--text);font:500 12.5px/1 var(--f-body)}
+.chip:hover{border-color:var(--amber)}
+.chip[aria-pressed="true"]{border-color:var(--amber);background:var(--raised);color:var(--amber)}
+
+.tab{height:30px;padding:0 22px;border:0;background:#18170a;color:var(--muted);
+  font-family:var(--f-display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  clip-path:polygon(11px 0,calc(100% - 11px) 0,100% 100%,0 100%)}
+.tab:hover{background:#2a2810;color:var(--text)}
+.tab:focus-visible{outline:none;background:#38361a;color:var(--text);text-decoration:underline;text-underline-offset:4px}
+.tab[aria-selected="true"]{background:var(--amber);color:#0f0d04}
+
+.switch{display:flex;align-items:center;gap:12px;width:520px;box-sizing:border-box;height:50px;padding:0 44px;border:0;background:var(--raised);color:var(--text);text-align:left;
+  clip-path:polygon(0 0,100% 0,calc(100% - 23.5px) 100%,23.5px 100%)}
+.switch:hover{background:#201e0d}
+.switch:focus-visible{outline:none;background:#2a2812;text-decoration:underline;text-underline-offset:4px}
+
+.field{background:var(--bg);border:1px solid #706c4e;border-radius:2px;color:var(--text);font-size:14px}
+.field:hover{border-color:var(--amber)}
+.field.is-focus,.field:focus-visible{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber),0 0 14px rgba(184,171,62,.24)}
+
+.tag{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border:1px solid currentColor;border-radius:2px;
+  font-family:var(--f-head);font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+
+.seg{display:flex;gap:3px}
+.seg>span{width:16px;height:8px;background:var(--line);clip-path:polygon(3px 0,100% 0,calc(100% - 3px) 100%,0 100%)}
+.bar{position:relative;height:10px;background:#121108;border:1px solid var(--line)}
+.bar>i{position:absolute;inset:1px auto 1px 1px;background:repeating-linear-gradient(90deg,var(--amber) 0 5px,transparent 5px 7px)}
+
+.chev{flex:1 1 0;min-width:0;height:36px;padding:1px;background:#36341d;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%)}
+.chev:first-child{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%)}
+.chev>div{height:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 18px 0 22px;background:var(--panel);white-space:nowrap;overflow:hidden;
+  clip-path:polygon(0 0,calc(100% - 11.5px) 0,100% 50%,calc(100% - 11.5px) 100%,0 100%,11.5px 50%)}
+.chev:first-child>div{clip-path:polygon(0 0,calc(100% - 11.5px) 0,100% 50%,calc(100% - 11.5px) 100%,0 100%)}
+
+@keyframes ember{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(184,171,62,.55)}50%{opacity:.5;box-shadow:0 0 8px 2px rgba(184,171,62,.35)}}
+.pulse{animation:ember 1.6s ease-in-out infinite}
+@keyframes chevGlow{0%,100%{background:var(--amber)}50%{background:#e0d88a}}
+.chev.live{animation:chevGlow 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.pulse,.chev.live{animation:none}}
+.scroll{scrollbar-color:var(--line) transparent;scrollbar-width:thin}
+.backdrop{position:absolute;inset:0;z-index:20;border:0;background:rgba(3,3,2,.66);cursor:default}
+.modal{position:absolute;z-index:21;top:64px;left:50%;transform:translateX(-50%);max-height:calc(100% - 90px)}
+.sh{flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;padding:0 6px 0 14px}
+.tg{width:28px;height:28px;margin-top:2px}
+.dl{margin:0;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;font-size:12.5px}
+.dl>dt{color:var(--muted)}
+.btn[aria-disabled="true"]{opacity:.42;cursor:not-allowed;box-shadow:none}
+.btn[aria-disabled="true"]:hover{border-color:var(--amber-dim);background:var(--raised)}
+.btn-primary[aria-disabled="true"]:hover{border-color:var(--amber);background:var(--amber)}
+.evb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:2px;text-align:left;color:var(--text);
+  background-color:#060503;background-image:linear-gradient(rgba(80,76,30,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(80,76,30,.18) 1px,transparent 1px);background-size:16px 16px}
+.evb:hover{border-color:var(--amber-dim)}
+.evb:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+button.sh{width:100%;border:0;margin:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+button.sh:hover .tgi{color:var(--text);background:var(--raised)}
+button.sh:hover .plate{background:#4a4729}
+button.sh:focus-visible{outline:none}
+button.sh:focus-visible .tgi{outline:2px solid var(--amber);outline-offset:1px;color:var(--text)}
+.tgi{flex:none;width:28px;height:28px;margin-top:2px;display:grid;place-items:center;border-radius:2px;color:var(--muted);transition:background .12s,color .12s}
+.scroll>*{flex-shrink:0}
+.chevbtn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.chev.live>div{animation:chevGlow 1.4s ease-in-out infinite}
+.chevbtn:focus-visible{outline:2px solid #e0d88a;outline-offset:-4px}
+.log-err{color:#ff8a80}
+.navbtn.newbtn{width:auto;margin:0 0 0 8px;flex:none;clip-path:polygon(24px 0,100% 0,calc(100% - 24px) 100%,0 100%)}
+.navbtn.newbtn>span{gap:8px;padding:0 38px 0 44px;font:600 14px/1 var(--f-body);white-space:nowrap;clip-path:polygon(23.5px 0,100% 0,calc(100% - 23.5px) 100%,.5px 100%)}
+.avatar{flex:none;width:30px;height:30px;display:grid;place-items:center;padding:0;background:#14120a;border:1px solid #77701f;border-radius:2px;color:var(--text);font-family:var(--f-mono);font-size:11px;font-weight:700}
+.avatar:hover,.avatar[aria-expanded="true"]{border-color:var(--amber);background:#201e0d}
+.avatar:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.menu{position:absolute;z-index:31;top:48px;right:22px;width:208px;padding:6px;background:#0b0a05;border:1px solid var(--frame-hi);border-radius:2px;box-shadow:0 12px 32px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:1px}
+.mi{display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 10px;border:0;border-radius:2px;background:transparent;color:var(--text);font:500 14px/1 var(--f-body);text-align:left}
+.mi:hover,.mi:focus-visible{background:#201e0d;outline:none;color:var(--amber)}
+.mi.out{color:#ff8a80}.mi.out:hover,.mi.out:focus-visible{color:#ffb4ab}
+.menu hr{margin:4px 6px;border:0;border-top:1px solid var(--line)}
+.chev.todo>div{background:#090804}
+.stop{display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;background:#090804;border:1px solid #2c2a14;border-radius:2px}
+.stop.ok{border-color:#2f5a44}
+.stop.req{border-color:#7a4a18}
+.num{flex:none;width:24px;height:24px;display:grid;place-items:center;background:#36341d;color:var(--text);font:700 12.5px/1 var(--f-head);clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px)}
+.stop.ok .num{background:#2f5a44}
+.acc{height:32px;padding:0 12px;font-size:12.5px}
+.acc[aria-pressed="true"]{border-color:#4fd69c;color:#4fd69c;background:#0d1a12}
+.shot{display:flex;flex-direction:column;width:100%;background:#fff;border:1px solid #3c3a1b;border-radius:3px;overflow:hidden}
+.shot.m{width:168px}
+.shot-bar{flex:none;height:20px;display:flex;align-items:center;gap:4px;padding:0 8px;background:#e8e8e3;font:500 11px/1 var(--f-mono);color:#5f5f58;white-space:nowrap;overflow:hidden}
+.shot-bar i{flex:none;width:6px;height:6px;border-radius:50%;background:#c3c3bb}
+.shot-bar span{margin-left:6px;overflow:hidden;text-overflow:ellipsis}
+.shot-body{height:168px;display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:#f8f8f6;color:#1d1d1b;font-family:var(--f-body)}
+.shot.m .shot-body{height:260px;padding:10px}
+.shot-head{display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+.sbtn{display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #c9ccd6;border-radius:4px;font-size:11px;color:#3b4a8f;background:#fff}
+.sbtn.solid{background:#3b5bdb;border-color:#3b5bdb;color:#fff}
+.shot-th{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:5px 6px;border-bottom:1px solid #dddcd5;font-size:11px;color:#6b6b63}
+.shot.m .shot-th{grid-template-columns:repeat(2,minmax(0,1fr))}
+.shot.m .dk{display:none}
+.skel{display:flex;flex-direction:column;gap:8px;padding:4px 6px}
+.skel i{display:block;height:12px;border-radius:3px;background:linear-gradient(90deg,#e6e6e0,#efefea,#e6e6e0)}
+.shot-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;color:#6b6b63;font-size:11px}
+.shot-empty b{color:#1d1d1b;font-size:12.5px}
+.codeblk{display:flex;flex-direction:column;border:1px solid #2c2a14;border-radius:2px;background:#030302;font-family:var(--f-mono);font-size:12.5px;line-height:20px;overflow:hidden}
+.codeblk pre{margin:0;padding:6px 0;overflow-x:auto}
+.cl{display:flex;white-space:pre}
+.cl>span:first-child{flex:none;width:44px;padding-right:10px;text-align:right;color:#878369;user-select:none}
+.vchip{height:26px;padding:0 10px;font-size:12.5px}
+.hbtn{display:inline-flex;align-items:center;gap:5px;height:24px;margin-left:2px;padding:0 8px;border:1px solid transparent;border-radius:2px;background:transparent;color:var(--muted);font:500 12.5px/1 var(--f-body)}
+.hbtn:hover,.hbtn:focus-visible{color:var(--amber);border-color:var(--line);outline:none}
+.hbtn[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+.hbtn[aria-disabled="true"]:hover{color:var(--muted);border-color:transparent}
+.chev.done{background:var(--amber)}
+.chev.done>div{background:var(--panel)}
+.chev.done:hover>div{background:#201e0d}
+.chev.cur,.chev.cur>div{background:var(--amber)}
+.chev.cur.tone-warn,.chev.cur.tone-warn>div{background:var(--warning)}
+.chev.cur.tone-err,.chev.cur.tone-err>div{background:var(--error)}
+.sh .plate>span{background:#36341d;color:var(--text);font-family:var(--f-head);font-weight:700;font-size:11px;letter-spacing:.14em}
+button.sh:hover .plate>span{background:#4a4729}
+</style>
+</helmet>
+
+<div style="height: 100vh; overflow: hidden; box-sizing: border-box; padding: 10px; background: #030302; display: flex; font-size: 14px; line-height: 1.5; color: #e6e2c8;">
+<div class="frame" style="--c: 26px; flex: 1;">
+<span class="brk tr" style="top: 8px; right: 8px; width: 22px; height: 22px;"></span><span class="brk bl" style="bottom: 8px; left: 8px; width: 22px; height: 22px;"></span>
+<div class="in" style="background: #030302; padding: 4px;">
+<div class="frame dimline" style="--c: 22px; flex: 1;">
+<div class="in" style="position: relative; background-color: #060503; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; padding: 0 14px 14px; gap: 10px;">
+
+<!-- HEADER -->
+<header style="flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; gap: 12px;">
+<div style="display: flex; flex-direction: column; gap: 6px; padding-top: 12px; padding-left: 18px; min-width: 0;">
+<a href="Home.dc.html" aria-label="Orc home" style="display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none;">
+<svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true" style="flex: none;"><path d="M7 1h18v18l-6 6H1V7z" fill="none" stroke="#b8ab3e" stroke-width="1.5"></path><path d="M7 10h12" stroke="#b8ab3e" stroke-width="1.75"></path><path d="M9 20l1.4-5.5l1.4 5.5z" fill="#b8ab3e"></path><path d="M14.2 20l1.4-5.5l1.4 5.5z" fill="#b8ab3e"></path></svg>
+<span style="font-family: var(--f-display); font-size: 16px; letter-spacing: .3em;">ORC</span>
+</a>
+<div class="ticks-x" aria-hidden="true" style="max-width: 240px;"></div>
+</div>
+<div style="display: flex; align-items: flex-start; gap: 0;">
+<button class="navbtn prev" aria-label="Previous review you claimed" title="Previous review you claimed" onClick="{{noop}}"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M15 6l-6 6l6 6"></path></svg></span></button>
+<div style="display: inline-flex; background: #77701f; padding: 0 1px 1px; clip-path: polygon(0 0,100% 0,calc(100% - 24px) 100%,24px 100%);">
+<button class="switch" aria-haspopup="dialog" aria-expanded="{{queueOpen}}" onClick="{{openQueue}}">
+<span style="flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 1px;">
+<span class="mono" style="font-size: 11px; letter-spacing: .16em; color: #a19d7c; text-transform: uppercase;">PR review · {{pr.num}} · <span style="color: #e6e2c8;">{{openLabel}}</span></span>
+<span style="font-family: var(--f-head); font-weight: 600; font-size: 19px; color: #e6e2c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{pr.title}}</span>
+</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b8ab3e" stroke-width="2" stroke-linecap="square" aria-hidden="true" style="flex: none;"><path d="M6 9l6 6l6-6"></path></svg>
+</button>
+</div>
+<button class="navbtn next" aria-label="Next review you claimed" title="Next review you claimed" onClick="{{noop}}"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 6l6 6l-6 6"></path></svg></span></button>
+</div>
+<div style="display: flex; align-items: flex-start; min-width: 0;">
+<a class="navbtn newbtn" href="Console.dc.html" style="text-decoration: none;"><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M15 6l-6 6l6 6"></path></svg>My tasks</span></a>
+<div style="margin-left: auto; padding: 12px 22px 0 0;">
+<span class="avatar" title="Josh Evensen · Engineer · Admin"><span aria-hidden="true">JE</span><span class="sr">Signed in as Josh Evensen, Engineer</span></span>
+</div>
+</div>
+</header>
+
+<!-- PIPELINE -->
+<ol aria-label="Review progress" style="flex: none; list-style: none; margin: 0; padding: 8px 4px; display: flex; gap: 2px;">
+<sc-for list="{{stages}}" as="s" hint-placeholder-count="4">
+<li class="{{s.cls}}" aria-current="{{s.current}}"><div>
+<span style="display: {{s.iconDisplay}}; color: {{s.color}};"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{s.icon}}"></path></svg></span>
+<span style="font-family: var(--f-head); font-weight: 700; font-size: 12.5px; letter-spacing: .14em; color: {{s.nameColor}};">{{s.name}}</span>
+<span class="sr">{{s.sr}}</span>
+</div></li>
+</sc-for>
+</ol>
+
+<sc-if value="{{decided.shown}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 7px 14px; margin: 0 4px; background: #0e0d06; border: 1px solid {{decided.border}}; border-radius: 2px; font-size: 14px;">
+<span><strong style="font-weight: 600; color: {{decided.color}};">{{decided.title}}</strong> <span style="color: #a19d7c;">{{decided.detail}}</span></span>
+<span style="flex: 1;"></span>
+<button class="btn btn-ghost" onClick="{{decided.undo}}" style="height: 28px; font-size: 12.5px;">Undo</button>
+</div>
+</sc-if>
+
+<!-- BODY -->
+<div style="flex: 1; min-height: 0; display: flex; gap: 10px;">
+
+<!-- LEFT: context -->
+<aside aria-label="Context for this PR" class="scroll" style="flex: 0 0 320px; min-width: 0; min-height: 0; overflow-y: auto; padding-right: 2px; display: flex; flex-direction: column; gap: 10px;">
+
+<div class="frame sm" style="flex: none;"><section class="in">
+<div class="sh" style="padding-right: 14px;"><span class="plate"><span>Brief</span></span><span class="mono" style="font-size: 11px; color: #a19d7c; padding-top: 4px;">60-second read</span></div>
+<div style="padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 12px;">
+<div style="display: flex; flex-direction: column; gap: 4px;"><h3 class="label" style="margin: 0; font-size: 11px; color: #e6e2c8;">Why</h3><p style="margin: 0; font-size: 14px; line-height: 1.55;">{{pr.why}}</p><a href="#" class="mono" style="font-size: 12.5px;">{{pr.key}} in Jira</a></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><h3 class="label" style="margin: 0; font-size: 11px; color: #e6e2c8;">Agreed criteria</h3>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px;"><sc-for list="{{pr.criteria}}" as="c" hint-placeholder-count="4"><li style="display: flex; gap: 8px; font-size: 14px; line-height: 1.45;"><span style="flex: none; display: inline-flex; padding-top: 3px; color: #4fd69c;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"></path></svg></span><span style="display: flex; flex-direction: column;"><span>{{c.text}}</span><span style="font-size: 12.5px; color: #a19d7c;">{{c.by}}</span></span></li></sc-for></ul></div>
+<div style="display: flex; flex-direction: column; gap: 4px;"><h3 class="label" style="margin: 0; font-size: 11px; color: #e6e2c8;">Out of scope</h3><ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: 14px; color: #d0ccb0;"><sc-for list="{{pr.outScope}}" as="o" hint-placeholder-count="2"><li>{{o}}</li></sc-for></ul></div>
+</div>
+</section></div>
+
+<div class="frame sm" style="flex: none;"><section class="in">
+<div class="sh" style="padding-right: 14px;"><span class="plate"><span>Already checked</span></span></div>
+<div style="padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 10px;">
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;"><sc-for list="{{pr.checked}}" as="k" hint-placeholder-count="3"><li style="display: flex; gap: 8px; font-size: 14px; line-height: 1.45;"><span style="flex: none; display: inline-flex; padding-top: 3px; color: {{k.color}};"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"></path></svg></span><span style="display: flex; flex-direction: column;"><span style="font-weight: 500;">{{k.title}}</span><span style="font-size: 12.5px; color: #a19d7c;">{{k.detail}}</span></span></li></sc-for></ul>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; background: #14120a; border: 1px solid #3c3a1b; border-radius: 2px;">
+<span class="label" style="font-size: 11px; color: #e6e2c8;">Your job here</span>
+<span style="font-size: 14px; line-height: 1.5;">Correctness, security, data integrity and whether the code is maintainable.</span>
+<span style="font-size: 12.5px; color: #a19d7c;">Not your job: copy and layout. Priya accepted those in Review.</span>
+</div>
+</div>
+</section></div>
+
+<div class="frame sm" style="flex: none;"><section class="in">
+<div class="sh" style="padding-right: 14px;"><span class="plate"><span>Pull request</span></span></div>
+<div style="padding: 10px 14px 14px;">
+<dl class="dl">
+<sc-for list="{{pr.meta}}" as="m" hint-placeholder-count="6"><dt>{{m.k}}</dt><dd class="{{m.cls}}" style="margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{m.v}}</dd></sc-for>
+</dl>
+</div>
+</section></div>
+</aside>
+
+<!-- MIDDLE: tour / code / conversation -->
+<div style="flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px;">
+
+<div class="frame" style="flex: {{bx.tour.flex}}; min-height: {{bx.tour.minH}};">
+<span class="brk tr"></span>
+<section class="in" aria-label="Guided tour">
+<button type="button" class="sh" style="padding: 0 8px 0 22px;" aria-expanded="{{bx.tour.expanded}}" aria-label="{{bx.tour.aria}}" onClick="{{bx.tour.toggle}}"><span class="plate"><span>Tour · riskiest first</span></span>
+<span style="display: flex; align-items: center; gap: 8px;"><span class="mono" style="font-size: 11px; color: #a19d7c; padding-top: 4px;">{{tourMeta}}</span>
+<span class="tgi" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true" style="transform: {{bx.tour.rot}};"><path d="M6 15l6-6l6 6"></path></svg></span></span></button>
+<sc-if value="{{bx.tour.open}}" hint-placeholder-val="{{ true }}">
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 14px 24px 24px; display: flex; flex-direction: column; gap: 16px;">
+<p style="margin: 0; font-size: 14px; color: #a19d7c; max-width: 80ch;">Orc ordered the changes by risk. Review the high-risk stops to approve; medium and low are yours to judge. For each stop, Orc lists how the change could break and whether a test covers it.</p>
+
+<sc-for list="{{tour}}" as="g" hint-placeholder-count="3">
+<section aria-label="{{g.label}}" style="display: flex; flex-direction: column; gap: 12px; max-width: 860px;">
+<div style="display: flex; align-items: center; gap: 10px;"><span class="tag" style="height: 22px; color: {{g.color}};">{{g.label}}</span><span style="font-size: 12.5px; color: #a19d7c;">{{g.note}}</span></div>
+
+<sc-for list="{{g.stops}}" as="st" hint-placeholder-count="2">
+<article class="{{st.cls}}" aria-label="{{st.title}}">
+<div style="display: flex; align-items: flex-start; gap: 12px;">
+<span class="num" aria-hidden="true">{{st.n}}</span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+<h3 style="margin: 0; font-family: var(--f-head); font-weight: 600; font-size: 16px; line-height: 1.3;">{{st.title}}</h3>
+<span style="font-size: 12.5px; color: {{g.color}};">{{st.risk}}</span>
+</div>
+<button class="btn acc" aria-pressed="{{st.doneStr}}" onClick="{{st.toggle}}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"></path></svg>{{st.doneLabel}}</button>
+</div>
+
+<div class="codeblk">
+<div style="display: flex; align-items: center; gap: 10px; padding: 5px 6px 5px 12px; border-bottom: 1px solid #2c2a14; background: #0b0a05;"><span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d0ccb0;">{{st.file}}</span><button class="btn btn-ghost" onClick="{{st.openCode}}" style="height: 26px; font-size: 12.5px;">Open in Code</button></div>
+<pre><sc-for list="{{st.lines}}" as="ln" hint-placeholder-count="6"><div class="cl" style="background: {{ln.bg}}; color: {{ln.color}};"><span>{{ln.n}}</span><span>{{ln.sign}} {{ln.text}}</span></div></sc-for></pre>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 4px;"><span class="label" style="font-size: 11px; color: #e6e2c8;">What it does</span><p style="margin: 0; font-size: 14px; line-height: 1.6; max-width: 76ch;">{{st.what}}</p></div>
+
+<div style="display: flex; flex-direction: column; gap: 6px;"><span class="label" style="font-size: 11px; color: #e6e2c8;">How this could break</span>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px;">
+<sc-for list="{{st.breaks}}" as="bk" hint-placeholder-count="3"><li style="display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; background: {{bk.bg}}; border: 1px solid {{bk.border}}; border-radius: 2px;">
+<span class="tag" style="flex: none; justify-content: center; min-width: 88px; height: 22px; color: {{bk.color}};">{{bk.status}}</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14px; font-weight: 500;">{{bk.title}}</span><span class="{{bk.detailCls}}" style="font-size: 12.5px; color: #a19d7c;">{{bk.detail}}</span></span>
+</li></sc-for>
+</ul></div>
+
+<sc-for list="{{st.comments}}" as="cm" hint-placeholder-count="0">
+<div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: #14120a; border: 1px solid {{cm.border}}; border-radius: 2px;">
+<span class="tag" style="flex: none; height: 22px; color: {{cm.color}};">{{cm.sev}}</span>
+<p style="flex: 1; min-width: 0; margin: 0; font-size: 14px;">{{cm.text}}</p>
+<sc-if value="{{cm.canRemove}}" hint-placeholder-val="{{ true }}"><button class="btn btn-ghost" onClick="{{cm.remove}}" style="height: 28px; font-size: 12.5px;">Remove</button></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{st.composing}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<div role="group" aria-label="Comment type" style="display: flex; gap: 6px;"><sc-for list="{{st.sevs}}" as="sv" hint-placeholder-count="3"><button class="chip vchip" aria-pressed="{{sv.pressed}}" onClick="{{sv.pick}}">{{sv.label}}</button></sc-for></div>
+<label for="cm-{{st.n}}" class="sr">Comment on {{st.title}}</label>
+<textarea id="cm-{{st.n}}" class="field" rows="2" onInput="{{st.onDraft}}" placeholder="Goes to GitHub as a review comment on {{st.file}}." style="resize: vertical; padding: 9px 12px; line-height: 1.5;"></textarea>
+<div style="display: flex; gap: 8px;"><button class="btn" onClick="{{st.addComment}}">Add to review</button><button class="btn btn-ghost" onClick="{{st.cancel}}">Cancel</button></div>
+</div>
+</sc-if>
+<sc-if value="{{st.canComment}}" hint-placeholder-val="{{ true }}"><div><button class="btn btn-ghost" onClick="{{st.compose}}" style="height: 30px; font-size: 12.5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg>Comment</button></div></sc-if>
+</article>
+</sc-for>
+</section>
+</sc-for>
+
+<section aria-label="Low risk, skim" style="display: flex; flex-direction: column; gap: 10px; max-width: 860px;">
+<div style="display: flex; align-items: center; gap: 10px;"><span class="tag" style="height: 22px; color: #a19d7c;">Low · skim</span><span style="font-size: 12.5px; color: #a19d7c;">Tests, types and docs. Orc found nothing risky.</span></div>
+<div class="{{skim.cls}}">
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+<sc-for list="{{skim.files}}" as="f" hint-placeholder-count="4"><li style="display: flex; align-items: center; gap: 12px; font-size: 12.5px;"><span class="mono" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.name}}</span><span class="mono"><span style="color: #4fd69c;">+{{f.add}}</span> <span style="color: #ff5a4d;">−{{f.del}}</span></span><span style="width: 180px; color: #a19d7c;">{{f.why}}</span></li></sc-for>
+</ul>
+<div style="display: flex; gap: 8px;"><button class="btn acc" aria-pressed="{{skim.doneStr}}" onClick="{{skim.toggle}}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"></path></svg>{{skim.doneLabel}}</button></div>
+</div>
+</section>
+</div>
+</sc-if>
+</section></div>
+
+<div class="frame" style="flex: {{bx.code.flex}}; min-height: {{bx.code.minH}};">
+<section class="in" aria-label="Code">
+<button type="button" class="sh" style="padding: 0 8px 0 22px;" aria-expanded="{{bx.code.expanded}}" aria-label="{{bx.code.aria}}" onClick="{{bx.code.toggle}}"><span class="plate"><span>Code</span></span>
+<span style="display: flex; align-items: center; gap: 8px;"><span class="mono" style="font-size: 11px; color: #a19d7c; padding-top: 4px;">{{pr.fileCount}} files · +{{pr.add}} −{{pr.del}}</span>
+<span class="tgi" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true" style="transform: {{bx.code.rot}};"><path d="M6 15l6-6l6 6"></path></svg></span></span></button>
+<sc-if value="{{bx.code.open}}" hint-placeholder-val="{{ false }}">
+<div style="flex: 1; min-height: 0; display: flex; border-top: 1px solid #2c2a14;">
+<ul class="scroll" style="flex: 0 0 280px; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 1px; border-right: 1px solid #2c2a14;">
+<sc-for list="{{files}}" as="f" hint-placeholder-count="9"><li><button class="row-btn" aria-current="{{f.current}}" onClick="{{f.pick}}" style="align-items: center; gap: 8px; padding: 5px 8px; font-family: var(--f-mono); font-size: 12.5px;">
+<span style="flex: none; width: 8px; height: 8px; background: {{f.riskColor}}; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);" aria-hidden="true"></span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column;"><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.name}}</span><span style="font-size: 11px; color: #a19d7c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.folder}}</span></span>
+<span style="flex: none; font-size: 11px;"><span style="color: #4fd69c;">+{{f.add}}</span> <span style="color: #ff5a4d;">−{{f.del}}</span></span>
+<span class="sr">{{f.sr}}</span></button></li></sc-for>
+</ul>
+<div class="scroll" style="flex: 1; min-width: 0; min-height: 0; overflow: auto; background: #030302; font-family: var(--f-mono); font-size: 12.5px; line-height: 20px; padding: 8px 0;">
+<div style="padding: 0 14px 8px; color: #d0ccb0;">{{cf.path}}</div>
+<sc-for list="{{cf.lines}}" as="ln" hint-placeholder-count="12"><div class="cl" style="background: {{ln.bg}}; color: {{ln.color}};"><span>{{ln.n}}</span><span>{{ln.sign}} {{ln.text}}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+</section></div>
+
+<div class="frame" style="flex: {{bx.convo.flex}}; min-height: {{bx.convo.minH}};">
+<section class="in" aria-label="Conversation on GitHub">
+<button type="button" class="sh" style="padding: 0 8px 0 22px;" aria-expanded="{{bx.convo.expanded}}" aria-label="{{bx.convo.aria}}" onClick="{{bx.convo.toggle}}"><span class="plate"><span>Conversation</span></span>
+<span style="display: flex; align-items: center; gap: 8px;"><span class="mono" style="font-size: 11px; color: #a19d7c; padding-top: 4px;">{{convoCount}} on GitHub</span>
+<span class="tgi" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true" style="transform: {{bx.convo.rot}};"><path d="M6 15l6-6l6 6"></path></svg></span></span></button>
+<sc-if value="{{bx.convo.open}}" hint-placeholder-val="{{ false }}">
+<ol class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 16px 24px 20px; display: flex; flex-direction: column; gap: 12px;">
+<sc-for list="{{convo}}" as="m" hint-placeholder-count="3"><li style="display: flex; gap: 12px; max-width: 760px;">
+<span style="flex: none; width: 30px; height: 30px; display: grid; place-items: center; background: #14120a; border: 1px solid #2c2a14; border-radius: 2px; font-family: var(--f-mono); font-size: 11px; font-weight: 700;">{{m.initials}}</span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;"><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font-size: 14px;"><strong style="font-weight: 600;">{{m.who}}</strong><span style="color: #a19d7c;">{{m.role}}</span><span class="mono" style="font-size: 11px; color: #a19d7c;">{{m.time}}</span></div><p style="margin: 0; font-size: 14px; white-space: pre-line;">{{m.text}}</p></div>
+</li></sc-for>
+</ol>
+</sc-if>
+</section></div>
+</div>
+
+<!-- RIGHT: your review -->
+<aside aria-label="Your review" style="flex: 0 0 300px; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px;">
+<div class="frame sm" style="flex: 1 1 0; min-height: 0;"><section class="in">
+<div class="sh" style="padding-right: 14px;"><span class="plate"><span>Your review</span></span><span class="mono" style="font-size: 11px; padding-top: 4px;">{{progress.summary}}</span></div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 8px 14px 14px; display: flex; flex-direction: column; gap: 14px;">
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px;">
+<sc-for list="{{progress.rows}}" as="r" hint-placeholder-count="3"><li style="display: flex; align-items: center; gap: 8px; font-size: 14px;"><span style="flex: none; width: 9px; height: 9px; background: {{r.color}}; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);" aria-hidden="true"></span><span style="flex: 1;">{{r.label}}</span><span class="mono" style="font-size: 12.5px; color: {{r.countColor}};">{{r.count}}</span></li></sc-for>
+</ul>
+
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; background: #1a1206; border: 1px solid #7a4a18; border-radius: 2px;">
+<span class="label" style="font-size: 11px; color: #ff9a3c;">No test covers</span>
+<sc-for list="{{gaps}}" as="gp" hint-placeholder-count="2"><button class="row-btn" onClick="{{gp.go}}" style="padding: 4px 6px; font-size: 14px; align-items: flex-start;"><span style="flex: none; color: #ff9a3c;">!</span><span style="display: flex; flex-direction: column;"><span>{{gp.title}}</span><span style="font-size: 12.5px; color: #a19d7c;">Stop {{gp.n}} · {{gp.stop}}</span></span></button></sc-for>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<h3 class="label" style="margin: 0; font-size: 11px; color: #e6e2c8;">Blast radius</h3>
+<dl style="margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+<sc-for list="{{blast}}" as="bl" hint-placeholder-count="4"><div><dt style="font-size: 12.5px; color: #a19d7c;">{{bl.k}}</dt><dd style="margin: 0; line-height: 1.45;">{{bl.v}}</dd></div></sc-for>
+</dl>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<h3 class="label" style="margin: 0; font-size: 11px; color: #e6e2c8;">Your comments <span class="mono" style="color: #a19d7c;">[{{commentCount}}]</span></h3>
+<sc-if value="{{noComments}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12.5px; color: #a19d7c;">None yet. Comment on any stop; they post to GitHub with your decision.</span></sc-if>
+<sc-for list="{{allComments}}" as="cm" hint-placeholder-count="0"><div style="display: flex; flex-direction: column; gap: 2px; font-size: 14px;"><span style="font-size: 12.5px; color: {{cm.color}};">{{cm.sev}} · stop {{cm.n}}</span><span>{{cm.text}}</span></div></sc-for>
+</div>
+</div>
+</section></div>
+
+<!-- ACTION BAR -->
+<div class="frame sm accent" style="flex: none;">
+<span class="brk bl" style="bottom: 4px; left: 4px; width: 10px; height: 10px;"></span>
+<div class="in" role="region" aria-label="Decision" style="gap: 10px; padding: 12px 14px 14px 16px; background: #1d1b0b;">
+<span style="font-size: 14px; line-height: 1.45; color: {{bar.hintColor}};">{{bar.hint}}</span>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<button class="btn btn-primary" aria-disabled="{{bar.approveDisabled}}" onClick="{{bar.approve}}" style="justify-content: center; width: 100%;">Approve on GitHub</button>
+<button class="btn" aria-disabled="{{bar.changesDisabled}}" onClick="{{bar.requestChanges}}" style="justify-content: center; width: 100%;">Request changes</button>
+</div>
+<span style="font-size: 12.5px; color: #a19d7c;">You're not the author or the assignee, so your approval counts for SOC2. GitHub records your name and the time.</span>
+</div>
+</div>
+</aside>
+</div>
+
+<!-- QUEUE MODAL -->
+<sc-if value="{{queueModal}}" hint-placeholder-val="{{ false }}">
+<button class="backdrop" aria-label="Close" onClick="{{closeQueue}}"></button>
+<div class="frame modal" role="dialog" aria-modal="true" aria-labelledby="q-h" style="width: min(640px, calc(100% - 40px));">
+<span class="brk tr"></span><span class="brk bl"></span>
+<div class="in">
+<div class="sh" style="gap: 10px; padding: 0 12px 0 22px;"><span class="plate"><span id="q-h">PR reviews</span></span>
+<button class="btn btn-ghost" onClick="{{closeQueue}}" style="height: 30px; margin-top: 4px; font-size: 12.5px;">Close<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button></div>
+<p style="margin: 10px 22px 0; font-size: 14px; color: #a19d7c;">Reviews aren't assigned. Anyone on the team can claim one, except the engineer whose task produced it.</p>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 12px 16px 18px; display: flex; flex-direction: column; gap: 14px;">
+<sc-for list="{{queue}}" as="qg" hint-placeholder-count="4">
+<section style="display: flex; flex-direction: column; gap: 2px;">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px 6px;"><span class="label" style="color: {{qg.labelColor}};">{{qg.label}}</span><span class="mono" style="font-size: 11px; color: #a19d7c;">[{{qg.count}}]</span></div>
+<sc-for list="{{qg.items}}" as="q" hint-placeholder-count="2">
+<div class="row-btn" aria-current="{{q.current}}" style="align-items: center; gap: 12px; cursor: default;">
+<span style="flex: none; width: 9px; height: 9px; background: {{q.riskColor}}; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);" aria-hidden="true"></span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{q.title}}</span><span style="font-size: 12.5px; color: #a19d7c;"><span class="mono">{{q.num}} · {{q.key}}</span> · {{q.meta}}</span></span>
+<sc-if value="{{q.canClaim}}" hint-placeholder-val="{{ true }}"><button class="btn" onClick="{{q.claim}}" style="height: 30px; font-size: 12.5px;">Claim</button></sc-if>
+<sc-if value="{{q.hasNote}}" hint-placeholder-val="{{ false }}"><span style="flex: none; font-size: 12.5px; color: {{q.noteColor}};">{{q.note}}</span></sc-if>
+</div>
+</sc-for>
+</section>
+</sc-for>
+<a class="row-btn" href="Console.dc.html" style="align-items: center; text-decoration: none; color: #a19d7c;">Back to my tasks</a>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      mid: null, done: {}, skim: false, comments: {}, composing: null, draft: '', sev: 'Suggestion',
+      file: 0, queue: false, claimed: {}, decision: null
+    };
+  }
+
+  pr() {
+    return {
+      num: '#1291', key: 'BIL-90', title: 'Apply account credit before charging the card', repo: 'billing-api',
+      why: 'Customers with account credit were charged the full invoice; the credit only came off the next invoice. Support refunds about 40 of these a month.',
+      criteria: [
+        ['Credit is applied before the card is charged.', 'Verified by Orc · test'],
+        ['If credit covers the whole invoice, the card isn\'t charged.', 'Verified by Orc · test'],
+        ['The receipt shows the credit applied.', 'Accepted by Priya · screenshot'],
+        ['Remaining credit shows on the account page.', 'Accepted by Priya · screenshot']
+      ],
+      outScope: ['Credit in a different currency from the invoice', 'Refunding past charges'],
+      checked: [
+        ['Behavior accepted by Priya Shah', 'Product · Review on Oct 5, 16:20 · 4 of 4 walkthrough steps', '#4fd69c'],
+        ['3 of 3 CI checks passed', 'unit, integration, lint · 6m 12s', '#4fd69c'],
+        ['Orc reviewed its own change', 'Flagged 2 paths with no test. They\'re in the tour.', '#ff9a3c']
+      ],
+      meta: [['Task', 'BIL-90 · Priya Shah', ''], ['Author', 'Orc, for Priya Shah', ''], ['Branch', 'orc/bil-90-credit-first', 'mono'], ['Base', 'main', 'mono'], ['Size', '9 files · +142 −38', 'mono'], ['Estimate', 'About 12 minutes', ''], ['Opened', '3h ago', ''], ['Code owners', 'billing team', '']],
+      fileCount: 9, add: 142, del: 38
+    };
+  }
+
+  stops() {
+    return [
+      { risk: 'high', title: 'Charge only what credit doesn\'t cover', why: 'Money: decides how much the card is charged.', file: 'src/billing/charge.ts',
+        lines: [['ctx', 88, 'export async function chargeInvoice(invoice: Invoice) {'], ['add', 89, '  const credit = await getCredit(invoice.accountId);'], ['add', 90, '  const applied = Math.min(credit.balanceCents, invoice.totalCents);'], ['add', 91, '  const due = invoice.totalCents - applied;'], ['del', 92, '  const charge = await stripe.charge(invoice.totalCents, invoice.card);'], ['add', 92, '  if (due === 0) return markPaidWithCredit(invoice, applied);'], ['add', 93, '  const charge = await stripe.charge(due, invoice.card);']],
+        what: 'Takes the smaller of the credit balance and the invoice total, charges the card only for the rest, and skips the card entirely when credit covers the invoice.',
+        breaks: [['Credit larger than the invoice', 'ok', 'charge.test.ts › credit exceeds total charges nothing'], ['Credit and invoice in different currencies', 'gap', 'credit.currency is never compared with invoice.currency. A GBP credit would take the wrong amount off a USD invoice.'], ['Invoice total of zero', 'ok', 'charge.test.ts › zero total skips charge']] },
+      { risk: 'high', title: 'Use credit and record it in one transaction', why: 'Money and concurrency: two charges at once could spend the same credit.', file: 'src/billing/credit.ts',
+        lines: [['add', 40, 'return db.transaction(async (tx) => {'], ['add', 41, '  const row = await tx.credit.findForUpdate(accountId);'], ['add', 42, '  const applied = Math.min(row.balanceCents, amountCents);'], ['add', 43, '  await tx.credit.decrement(accountId, applied);'], ['add', 44, '  await tx.charges.insert({ invoiceId, appliedCreditCents: applied });'], ['add', 45, '  return applied;'], ['add', 46, '});']],
+        what: 'Locks the account\'s credit row, takes what\'s needed and records it on the charge in a single transaction. If the card charge fails afterwards, chargeInvoice puts the credit back.',
+        breaks: [['Two charges for the same account at once', 'ok', 'credit.test.ts › concurrent charges spend credit once'], ['Card declined after credit is taken', 'ok', 'charge.test.ts › restores credit when the card is declined'], ['Putting the credit back fails', 'gap', 'The error is logged but the customer loses the credit. No retry and no test.']] },
+      { risk: 'medium', title: 'New column on charges', why: 'Schema change on a large table (4.1M rows).', file: 'migrations/20261004_applied_credit.ts',
+        lines: [['add', 1, 'export async function up(db) {'], ['add', 2, "  await db.schema.alterTable('charges', (t) => t.integer('applied_credit_cents').nullable());"], ['add', 3, '}'], ['add', 4, 'export async function down(db) {'], ['add', 5, "  await db.schema.alterTable('charges', (t) => t.dropColumn('applied_credit_cents'));"], ['add', 6, '}']],
+        what: 'Adds a nullable column to record how much credit each charge used. Existing rows stay null.',
+        breaks: [['Locking the table during deploy', 'ok', 'A nullable column with no default is a metadata-only change in Postgres 16.'], ['Rolling back', 'ok', 'The down migration drops the column. Nothing reads it yet outside this PR.']] },
+      { risk: 'medium', title: 'Receipt shows the credit line', why: 'Customer-facing amounts.', file: 'src/receipts/receiptTemplate.ts',
+        lines: [['ctx', 52, '  lines.push(row("Subtotal", money(invoice.totalCents)));'], ['add', 53, '  if (charge.appliedCreditCents > 0) {'], ['add', 54, '    lines.push(row("Account credit", "−" + money(charge.appliedCreditCents)));'], ['add', 55, '  }'], ['ctx', 56, '  lines.push(row("Charged to card", money(charge.amountCents)));']],
+        what: 'Adds an Account credit line between the subtotal and the amount charged, only when credit was used.',
+        breaks: [['Invoice paid entirely with credit', 'ok', 'receipt.test.ts › shows paid with credit'], ['Old charges with no credit recorded', 'ok', 'Null counts as no credit, so old receipts are unchanged.']] }
+    ];
+  }
+
+  skimFiles() {
+    return [['src/billing/charge.test.ts', 64, 0, 'Tests for stop 1'], ['src/billing/credit.test.ts', 41, 0, 'Tests for stop 2'], ['src/receipts/receipt.test.ts', 22, 0, 'Tests for stop 4'], ['src/types/billing.ts', 3, 0, 'One optional field'], ['docs/billing.md', 9, 2, 'Describes the new order']];
+  }
+
+  renderVals() {
+    var self = this, s = this.state, pr = this.pr(), stops = this.stops(), noop = function () {};
+    var riskColor = { high: '#ff5a4d', medium: '#ff9a3c', low: '#a19d7c' };
+    var codeLine = function (l) { var add = l[0] === 'add', del = l[0] === 'del'; return { n: String(l[1]), text: l[2], sign: add ? '+' : del ? '−' : ' ', bg: add ? 'rgba(79,214,156,0.09)' : del ? 'rgba(255,90,77,0.10)' : 'transparent', color: add ? '#e4f3ea' : del ? '#f6d9d4' : '#d0ccb0' }; };
+    var sevColor = { Blocking: '#ff5a4d', Suggestion: '#d0ccb0', Question: '#5fb4ff' };
+
+    // ---------- files (Code tab) ----------
+    var skimRaw = this.skimFiles();
+    var fileDefs = stops.map(function (x) { return { path: x.file, add: x.lines.filter(function (l) { return l[0] === 'add'; }).length * 3, del: x.lines.filter(function (l) { return l[0] === 'del'; }).length, risk: x.risk, lines: x.lines }; })
+      .concat(skimRaw.map(function (f) { return { path: f[0], add: f[1], del: f[2], risk: 'low', lines: [['ctx', 1, '// ' + f[3] + '. Full diff loads from GitHub.']] }; }));
+    var fi = Math.min(s.file, fileDefs.length - 1);
+    var files = fileDefs.map(function (f, i) {
+      var slash = f.path.lastIndexOf('/');
+      return { name: f.path.slice(slash + 1), folder: f.path.slice(0, slash + 1), add: f.add, del: f.del, riskColor: riskColor[f.risk], current: i === fi ? 'true' : 'false',
+        sr: ', ' + f.risk + ' risk', pick: function () { self.setState({ file: i }); } };
+    });
+    var cf = { path: fileDefs[fi].path, lines: fileDefs[fi].lines.map(codeLine) };
+
+    // ---------- tour ----------
+    var decided = !!s.decision;
+    var doneN = { high: 0, medium: 0 }, totN = { high: 0, medium: 0 }, gaps = [], allComments = [], blocking = 0;
+    var stopVals = stops.map(function (x, i) {
+      var k = 's' + i, done = !!s.done[k], cms = s.comments[k] || [];
+      totN[x.risk]++; if (done) doneN[x.risk]++;
+      var comments = cms.map(function (c, ci) {
+        if (c.sev === 'Blocking') blocking++;
+        allComments.push({ sev: c.sev, text: c.text, n: i + 1, color: sevColor[c.sev] });
+        return { sev: c.sev, text: c.text, color: sevColor[c.sev], border: c.sev === 'Blocking' ? '#6b2520' : '#2c2a14', canRemove: !decided,
+          remove: function () { var all = Object.assign({}, self.state.comments); all[k] = (all[k] || []).filter(function (_, j) { return j !== ci; }); self.setState({ comments: all }); } };
+      });
+      var breaks = x.breaks.map(function (b) {
+        var gap = b[1] === 'gap';
+        if (gap) gaps.push({ title: b[0], n: i + 1, stop: x.title, go: function () { self.setState({ mid: 'tour' }); } });
+        return { title: b[0], status: gap ? 'No test' : 'Covered', color: gap ? '#ff9a3c' : '#4fd69c', detail: b[2], detailCls: gap ? '' : (b[2].indexOf('›') > 0 ? 'mono' : ''),
+          bg: gap ? '#1a1206' : 'transparent', border: gap ? '#7a4a18' : '#2c2a14' };
+      });
+      var composing = s.composing === k;
+      return {
+        n: i + 1, title: x.title, risk: x.why, file: x.file, lines: x.lines.map(codeLine), what: x.what, breaks: breaks,
+        cls: 'stop' + (done ? ' ok' : ''), doneStr: done ? 'true' : 'false', doneLabel: done ? 'Reviewed' : 'Mark reviewed',
+        toggle: function () { var d = Object.assign({}, self.state.done); if (done) delete d[k]; else d[k] = true; self.setState({ done: d }); },
+        openCode: function () { self.setState({ mid: 'code', file: i }); },
+        comments: comments, composing: composing && !decided, canComment: !composing && !decided,
+        compose: function () { self.setState({ composing: k, draft: '', sev: 'Suggestion' }); },
+        cancel: function () { self.setState({ composing: null }); },
+        onDraft: function (e) { self.setState({ draft: e.target.value }); },
+        sevs: ['Blocking', 'Suggestion', 'Question'].map(function (v) { return { label: v, pressed: s.sev === v ? 'true' : 'false', pick: function () { self.setState({ sev: v }); } }; }),
+        addComment: function () {
+          var t = (self.state.draft || '').trim(); if (!t) return;
+          var all = Object.assign({}, self.state.comments); all[k] = (all[k] || []).concat([{ sev: self.state.sev, text: t }]);
+          self.setState({ comments: all, composing: null, draft: '' });
+        },
+        _risk: x.risk
+      };
+    });
+    var tour = [
+      { label: 'High risk', color: riskColor.high, note: 'Required before you can approve.', stops: stopVals.filter(function (x) { return x._risk === 'high'; }) },
+      { label: 'Medium risk', color: riskColor.medium, note: 'Worth a look.', stops: stopVals.filter(function (x) { return x._risk === 'medium'; }) }
+    ];
+    var skim = { files: skimRaw.map(function (f) { return { name: f[0], add: f[1], del: f[2], why: f[3] }; }),
+      cls: 'stop' + (s.skim ? ' ok' : ''), doneStr: s.skim ? 'true' : 'false', doneLabel: s.skim ? 'Looks fine' : 'Mark all as looks fine',
+      toggle: function () { self.setState({ skim: !self.state.skim }); } };
+    var highLeft = totN.high - doneN.high;
+    var reviewedStops = doneN.high + doneN.medium;
+
+    // ---------- accordion ----------
+    var midOpen = s.mid === 'none' ? 'none' : (s.mid || 'tour');
+    var mb = function (id, name) {
+      var o = midOpen === id;
+      return { open: o, expanded: o ? 'true' : 'false', rot: o ? 'none' : 'rotate(180deg)', flex: o ? '1 1 0' : 'none', minH: o ? '96px' : '0',
+        aria: (o ? 'Collapse ' : 'Open ') + name, toggle: function () { self.setState({ mid: o ? 'none' : id }); } };
+    };
+    var bx = { tour: mb('tour', 'tour'), code: mb('code', 'code'), convo: mb('convo', 'conversation') };
+
+    // ---------- decision ----------
+    var commentN = allComments.length;
+    var canApprove = highLeft === 0 && blocking === 0 && !decided;
+    var bar = {
+      hint: decided ? (s.decision === 'approved' ? 'Approved. Orc merges when Priya confirms the release window.' : 'Changes requested. Orc is working through your comments.')
+        : blocking ? blocking + (blocking === 1 ? ' blocking comment' : ' blocking comments') + '. Request changes, or remove ' + (blocking === 1 ? 'it' : 'them') + ' to approve.'
+        : highLeft ? 'Review the ' + highLeft + ' high-risk ' + (highLeft === 1 ? 'stop' : 'stops') + ' to approve.' + (commentN ? ' Or request changes now.' : '')
+        : 'High-risk stops reviewed. Approve, or request changes' + (commentN ? ' with your ' + commentN + (commentN === 1 ? ' comment.' : ' comments.') : '.'),
+      hintColor: canApprove ? '#4fd69c' : blocking ? '#ff9a3c' : '#a19d7c',
+      approveDisabled: canApprove ? 'false' : 'true', changesDisabled: commentN && !decided ? 'false' : 'true',
+      approve: function () { if (canApprove) self.setState({ decision: 'approved', composing: null }); },
+      requestChanges: function () { if (commentN && !decided) self.setState({ decision: 'changes', composing: null }); }
+    };
+    var dec = {
+      shown: decided,
+      title: s.decision === 'approved' ? 'Approved on GitHub.' : 'Changes requested on GitHub.',
+      detail: s.decision === 'approved' ? 'Posted as Josh Evensen with ' + commentN + (commentN === 1 ? ' comment.' : ' comments.') : commentN + (commentN === 1 ? ' comment is' : ' comments are') + ' now proposals in Priya\'s Feedback queue. You\'ll get a re-review showing only what changed.',
+      color: s.decision === 'approved' ? '#4fd69c' : '#ff9a3c', border: s.decision === 'approved' ? '#2f5a44' : '#7a4a18',
+      undo: function () { self.setState({ decision: null }); }
+    };
+
+    // ---------- progress strip ----------
+    var stageDefs = [['Claim', 'done'], ['Review', decided ? 'done' : 'cur'], ['Decide', decided ? (s.decision === 'approved' ? 'done' : 'warn') : 'todo'], ['Merge', s.decision === 'approved' ? 'cur' : 'todo']];
+    var stages = stageDefs.map(function (d) {
+      var isDone = d[1] === 'done', isCur = d[1] === 'cur', isWarn = d[1] === 'warn';
+      return { name: d[0].toUpperCase(), cls: 'chev' + (isDone ? ' done' : isCur ? ' cur tone-ok' : isWarn ? ' cur tone-warn' : ' todo'),
+        current: isCur || isWarn ? 'step' : 'false', iconDisplay: isCur || isWarn ? 'none' : 'inline-flex',
+        icon: isDone ? 'M5 12l5 5l10-10' : 'M12 4a8 8 0 1 1 0 16a8 8 0 1 1 0-16', color: isDone ? '#b8ab3e' : '#878369', nameColor: isCur || isWarn ? '#121004' : isDone ? '#e6e2c8' : '#878369',
+        sr: isDone ? ': done' : isCur ? ': current' : isWarn ? ': changes requested' : ': not started' };
+    });
+
+    // ---------- queue ----------
+    var qDefs = [
+      ['mine', '#1291', 'BIL-90', 'Apply account credit before charging the card', 'high', 'Claimed by you · about 12 min'],
+      ['open', '#1294', 'SUP-230', 'Send one receipt email per payment', 'medium', 'Waiting 4h · about 6 min'],
+      ['open', '#1296', 'WEB-503', 'Show the VAT number on invoices', 'low', 'Waiting 1h · about 4 min'],
+      ['others', '#1290', 'BIL-87', 'Retry webhooks with backoff', 'high', 'Sam Ortiz claimed it 2h ago'],
+      ['blocked', '#1279', 'WEB-465', 'Show tax on invoice line items', 'medium', 'Your task produced it']
+    ];
+    var groupOf = function (q) { return q[0] === 'open' && s.claimed[q[1]] ? 'mine' : q[0]; };
+    var queue = [['mine', 'Claimed by you', '#e6e2c8'], ['open', 'Open to the team', '#ff9a3c'], ['others', 'Claimed by others', '#a19d7c'], ['blocked', 'You can\'t review', '#a19d7c']].map(function (g) {
+      var items = qDefs.filter(function (q) { return groupOf(q) === g[0]; }).map(function (q) {
+        var claimedNow = q[0] === 'open' && !!s.claimed[q[1]];
+        return { num: q[1], key: q[2], title: q[3], riskColor: riskColor[q[4]], meta: claimedNow ? 'Claimed by you just now' : q[5], current: q[1] === pr.num ? 'true' : 'false',
+          canClaim: q[0] === 'open' && !claimedNow, claim: function () { var c = Object.assign({}, self.state.claimed); c[q[1]] = true; self.setState({ claimed: c }); },
+          hasNote: q[0] === 'blocked' || q[1] === pr.num, note: q[0] === 'blocked' ? 'SOC2: someone else reviews' : 'Open now', noteColor: q[0] === 'blocked' ? '#a19d7c' : '#b8ab3e' };
+      });
+      return { label: g[1], labelColor: g[2], count: items.length, items: items };
+    });
+    var openN = qDefs.filter(function (q) { return q[0] === 'open' && !s.claimed[q[1]]; }).length;
+
+    var convo = [
+      ['OR', 'Orc', 'for Priya Shah', '3h ago', 'Summary for reviewers: credit is now applied before the card is charged. Start with charge.ts and credit.ts; they move money. Two paths have no test (currency mismatch, failed credit restore). Behind the credit_before_charge flag, off in production.'],
+      ['CI', 'github-actions', 'bot', '3h ago', 'All 3 checks passed: unit, integration, lint.'],
+      ['PS', 'Priya Shah', 'Product', '2h ago', 'Accepted the behavior in Orc. Receipt wording is approved by support.']
+    ].map(function (m) { return { initials: m[0], who: m[1], role: m[2], time: m[3], text: m[4] }; });
+
+    return {
+      noop: noop, pr: Object.assign({}, pr, {
+        criteria: pr.criteria.map(function (c) { return { text: c[0], by: c[1] }; }),
+        checked: pr.checked.map(function (c) { return { title: c[0], detail: c[1], color: c[2] }; }),
+        meta: pr.meta.map(function (m) { return { k: m[0], v: m[1], cls: m[2] }; }) }),
+      stages: stages, decided: dec, bx: bx, tour: tour, skim: skim, files: files, cf: cf, convo: convo, convoCount: convo.length,
+      tourMeta: reviewedStops + '/' + (totN.high + totN.medium) + ' reviewed · high risk ' + doneN.high + '/' + totN.high,
+      gaps: gaps, allComments: allComments, commentCount: commentN, noComments: commentN === 0,
+      progress: {
+        summary: decided ? (s.decision === 'approved' ? 'approved' : 'changes requested') : highLeft ? highLeft + ' high-risk left' : 'ready to decide',
+        rows: [
+          { label: 'High risk', color: riskColor.high, count: doneN.high + '/' + totN.high, countColor: doneN.high === totN.high ? '#4fd69c' : '#e6e2c8' },
+          { label: 'Medium risk', color: riskColor.medium, count: doneN.medium + '/' + totN.medium, countColor: '#e6e2c8' },
+          { label: 'Low · skim', color: riskColor.low, count: s.skim ? 'done' : '5 files', countColor: s.skim ? '#4fd69c' : '#a19d7c' }
+        ]
+      },
+      blast: [
+        { k: 'Callers of chargeInvoice()', v: 'Nightly subscription renewals, the Charge now button in admin, and the failed-payment retry job.' },
+        { k: 'Schema', v: 'One nullable column on charges. Reversible.' },
+        { k: 'Feature flag', v: 'credit_before_charge · on in staging, off in production.' },
+        { k: 'Rollback', v: 'Turn the flag off. No data to undo.' }
+      ],
+      bar: bar, queue: queue, openLabel: openN + ' more open to the team',
+      queueModal: !!s.queue, queueOpen: s.queue ? 'true' : 'false',
+      openQueue: function () { self.setState({ queue: true }); }, closeQueue: function () { self.setState({ queue: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

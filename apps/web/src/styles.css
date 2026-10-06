@@ -1,2 +1,255 @@
+/* Fonts load from Google Fonts for now; self-host them before production. */
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Michroma&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
+
+/*
+ * Orc's design tokens. See docs/design/README.md for what each one is for.
+ * Orc has one theme (dark). Moss is the accent and means interactive or active;
+ * static things stay neutral. Every text pair here meets WCAG AA.
+ */
+:root {
+  /* Orc palette */
+  --orc-void: #030302;
+  --orc-bg: #060503;
+  --orc-panel: #0b0a05;
+  --orc-raised: #14120a;
+  --orc-hover: #201e0d;
+  --orc-line: #2c2a14;
+  --orc-tab: #36341d;
+  --orc-frame: #4a4730;
+  --orc-frame-hi: #7b7758;
+  --orc-moss: #b8ab3e;
+  --orc-moss-hi: #cfc463;
+  --orc-moss-dim: #77701f;
+  --orc-on-moss: #121004;
+  --orc-text: #e6e2c8;
+  --orc-text-2: #d0ccb0;
+  --orc-muted: #a19d7c;
+  --orc-gutter: #878369;
+  --orc-success: #4fd69c;
+  --orc-warning: #ff9a3c;
+  --orc-error: #ff5a4d;
+  --orc-error-text: #ff8a80;
+  --orc-info: #5fb4ff;
+  --orc-grid: rgb(80 76 30 / 0.3);
+
+  /* shadcn/ui variables, mapped onto the palette */
+  --background: var(--orc-bg);
+  --foreground: var(--orc-text);
+  --card: var(--orc-panel);
+  --card-foreground: var(--orc-text);
+  --popover: var(--orc-panel);
+  --popover-foreground: var(--orc-text);
+  --primary: var(--orc-moss);
+  --primary-foreground: var(--orc-on-moss);
+  --secondary: var(--orc-raised);
+  --secondary-foreground: var(--orc-text);
+  --muted: var(--orc-raised);
+  --muted-foreground: var(--orc-muted);
+  --accent: var(--orc-hover);
+  --accent-foreground: var(--orc-text);
+  --destructive: var(--orc-error);
+  --destructive-foreground: var(--orc-on-moss);
+  --border: var(--orc-line);
+  --input: #706c4e; /* 3:1 against panels, for form-control outlines */
+  --ring: var(--orc-moss);
+  --radius: 2px;
+  --chart-1: var(--orc-moss);
+  --chart-2: var(--orc-info);
+  --chart-3: var(--orc-success);
+  --chart-4: var(--orc-warning);
+  --chart-5: var(--orc-error);
+  --sidebar: var(--orc-panel);
+  --sidebar-foreground: var(--orc-text);
+  --sidebar-primary: var(--orc-moss);
+  --sidebar-primary-foreground: var(--orc-on-moss);
+  --sidebar-accent: var(--orc-hover);
+  --sidebar-accent-foreground: var(--orc-text);
+  --sidebar-border: var(--orc-line);
+  --sidebar-ring: var(--orc-moss);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  /* shadcn/ui colours */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Orc colours, as utilities: bg-panel, text-moss, border-frame, … */
+  --color-void: var(--orc-void);
+  --color-panel: var(--orc-panel);
+  --color-raised: var(--orc-raised);
+  --color-hover: var(--orc-hover);
+  --color-line: var(--orc-line);
+  --color-tab: var(--orc-tab);
+  --color-frame: var(--orc-frame);
+  --color-frame-hi: var(--orc-frame-hi);
+  --color-moss: var(--orc-moss);
+  --color-moss-hi: var(--orc-moss-hi);
+  --color-moss-dim: var(--orc-moss-dim);
+  --color-on-moss: var(--orc-on-moss);
+  --color-text-2: var(--orc-text-2);
+  --color-gutter: var(--orc-gutter);
+  --color-success: var(--orc-success);
+  --color-warning: var(--orc-warning);
+  --color-error: var(--orc-error);
+  --color-error-text: var(--orc-error-text);
+  --color-info: var(--orc-info);
+
+  /* Radius: Orc's corners are near-square; shapes come from chamfers */
+  --radius-sm: calc(var(--radius) - 1px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 1px);
+  --radius-xl: calc(var(--radius) + 2px);
+
+  /* Fonts */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-head: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Michroma", ui-sans-serif, system-ui, sans-serif;
+
+  /* Type scale: five sizes, nothing below 11px */
+  --text-label: 11px;
+  --text-label--line-height: 1.4;
+  --text-small: 12.5px;
+  --text-small--line-height: 1.5;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-title: 16px;
+  --text-title--line-height: 1.3;
+  --text-task: 19px;
+  --text-task--line-height: 1.25;
+
+  /* Running and live indicators */
+  --animate-ember: ember 1.6s ease-in-out infinite;
+  --animate-glow: glow 1.4s ease-in-out infinite;
+
+  @keyframes ember {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  @keyframes glow {
+    0%, 100% { background-color: var(--orc-moss); }
+    50% { background-color: #e0d88a; }
+  }
+}
+
+/*
+ * Shapes. Orc's frames are a 1px outline with chamfered corners, made with
+ * clip-path: an outer element in the outline colour with 1px padding, and an
+ * inner element clipped 0.5px tighter. clip-path also clips focus outlines,
+ * so shaped controls draw their focus state inside the shape.
+ */
+@utility chamfer {
+  --chamfer: 16px;
+  clip-path: polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+}
+@utility chamfer-sm {
+  --chamfer: 10px;
+}
+@utility chamfer-lg {
+  --chamfer: 26px;
+}
+/* <div class="frame chamfer chamfer-sm"><div class="frame-in">…</div></div>
+   frame-in inherits --chamfer from the outer element, so it carries no chamfer class. */
+@utility frame {
+  background-color: var(--orc-frame);
+  padding: 1px;
+}
+@utility frame-accent {
+  background-color: var(--orc-moss);
+}
+@utility frame-in {
+  --chamfer-in: calc(var(--chamfer, 16px) - 0.5px);
+  background-color: var(--orc-panel);
+  clip-path: polygon(var(--chamfer-in) 0, 100% 0, 100% calc(100% - var(--chamfer-in)), calc(100% - var(--chamfer-in)) 100%, 0 100%, 0 var(--chamfer-in));
+}
+/* Section tab on a panel's top edge */
+@utility plate {
+  display: inline-flex;
+  align-items: center;
+  height: 25px;
+  padding: 0 24px;
+  background-color: var(--orc-tab);
+  color: var(--orc-text);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 14px 100%);
+}
+/* Pipeline stage. Middle stages notch on the left; add chevron-first to the first one */
+@utility chevron {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+}
+@utility chevron-first {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+}
+/* Previous, next and New task buttons; slant matches the task switcher */
+@utility slant {
+  clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
+}
+@utility slant-reverse {
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 100%, 24px 100%);
+}
+/* The grid behind the work area */
+@utility hud-grid {
+  background-color: var(--orc-bg);
+  background-image: linear-gradient(var(--orc-grid) 1px, transparent 1px), linear-gradient(90deg, var(--orc-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    background-color: var(--orc-void);
+  }
+  body {
+    @apply bg-background text-foreground font-sans text-body antialiased;
+  }
+  ::placeholder {
+    color: var(--orc-muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+}
