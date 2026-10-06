@@ -99,6 +99,8 @@ NestJS, one module per domain: organizations and setup, people and identity, wor
 - Produces the OpenAPI spec with `@nestjs/swagger` (C-5).
 - Receives Jira and GitHub webhooks, normalizes them into Orc events, and maps the actor to a known person (FR-4, FR-5). Tracker events update tasks; they never start runs. Only explicit actions in the web app start or signal runs (FR-6, FR-8).
 - Signs people in through the organization's identity provider over OIDC (FR-58).
+- Holds each person's GitHub user authorization (from the GitHub App's user sign-in), encrypted, for the few actions that must be made as that person: approving or requesting changes on a pull request (FR-97, 0028). These tokens never reach a sandbox.
+- Proxies the terminal (FR-104): an authenticated, audited exec session into a paused or taken-over run's sandbox, through the `Sandbox` contract.
 
 ### Workers (`apps/worker`)
 Temporal workers. **Workflows** (deterministic) hold run state and control flow; **activities** do anything with side effects: sandbox operations, model-driven agent sessions, action execution, external API calls.
@@ -113,7 +115,7 @@ A small service the sandbox can reach, and the only route to a model. See §7.
 Serves approved lessons and skills to other agents (FR-74), with the same access rules as the API (FR-75). Built with the MCP TypeScript SDK, hosted in the API.
 
 ### Web UI (`apps/web`)
-Orc's workspace (FR-56, 0025; layout and behaviour in [interface.md](interface.md)): tasks grouped by state, task creation, run history, review of each workflow's output before anything leaves Orc, approvals, run records, insights, and settings. A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
+Orc's workspace (FR-56, 0025, 0029; layout and behaviour in [interface.md](interface.md), look in [design/](design/README.md)): Home, the task console with its stages, the review walkthrough, pull request review tasks, engineer tools (steering, terminal, repo browser, ask, command palette), run records, insights, and settings. A static React SPA (Vite, TanStack Router) served from the same origin as the API; the API handles sign-in and sets an httpOnly session cookie. Uses only the generated API client (0021).
 
 ## 5. Integration contracts
 
@@ -121,14 +123,14 @@ Orc's workspace (FR-56, 0025; layout and behaviour in [interface.md](interface.m
 
 | Contract | v1 implementation | Responsible for |
 |---|---|---|
-| `IssueTracker` | `issue-tracker-github`, `issue-tracker-jira` | Read work items, comments, attachments; post comments and proposed edits in native format (FR-53); receive events |
-| `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests, line and file review comments, stacked pull requests, CI status, events |
+| `IssueTracker` | `issue-tracker-github`, `issue-tracker-jira` | Read work items, comments, attachments, due dates; post comments and proposed edits in native format (FR-53); update fields and the assignee, and archive or reopen items, as a person or as Orc (FR-99, FR-100); receive events |
+| `CodeHost` | `code-host-github` | Clone access, branches, push, pull requests (open and close), line and file review comments, review decisions submitted as a person (FR-97), `CODEOWNERS`, stacked pull requests, CI status, events |
 | `Notifications` | `notifications-email` | Deliver messages and digests (FR-79, FR-80) |
 | `IdentityProvider` | OIDC | Sign-in, user directory |
 | `LlmProvider` | `models-bedrock`, `models-anthropic`; `models-fake` for development and tests | Authenticate, translate, and forward model calls; embeddings; usage reporting; used only by the gateway (0019, 0021) |
 | `ObjectStore` | `object-store-s3` | Store and delete screenshots, evidence, and attachments, scoped by organization (Q-DAT-2) |
 | `Sandbox` | `sandbox-k8s` | Create, pause, resume, execute in, copy out of, and destroy execution environments |
-| `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types, returning results, action requests, and decision records (FR-77, 0011) |
+| `Agent` | Claude Agent SDK | Run an agent session in a sandbox with given skills, lessons, and allowed action types, accepting steering messages while it runs (FR-103), and returning results, action requests, decision records, and a transcript (FR-77, FR-107, 0011) |
 
 The API and workers depend only on `contracts`; Nest dependency injection selects the implementation.
 
@@ -166,7 +168,13 @@ sequenceDiagram
 - **Pausing:** the workflow waits for a signal. The sandbox's storage is kept until the idle limit; after that, resuming rebuilds it from the branch (FR-64).
 - **Limits:** attempts, review rounds, and check runs are counters in the workflow (FR-13). Lifetime and resource limits are enforced by the sandbox (FR-65). Spending caps are enforced by the gateway (FR-48).
 - **Cancel and pause:** cancellation is Temporal cancellation (FR-10). The emergency stop (FR-83) is a policy flag checked before every activity, plus cancellation of affected runs.
-- **Takeover and hand-back:** takeover ends the run and leaves the branch (FR-11). On hand-back, the run starts from the branch's current head, including the person's commits (FR-87). Orc never force-pushes over commits it didn't make.
+- **Takeover and hand-back:** takeover pushes the agent's work so far and ends the run, leaving the branch (FR-11). On hand-back, the run starts from the branch's current head, including the person's commits (FR-87). Orc never force-pushes over commits it didn't make.
+- **Steering** (FR-103, 0029): a steering message is a signal to the running workflow, passed to the agent session either at once (interrupting the current step) or after it. It's recorded in the run record and treated as untrusted input like any other content (§7).
+- **Fast lane and tripwires** (FR-93, FR-94, 0027): a fast-lane run skips the plan-approval wait unless policy requires it. The workflow checks the tripwires after each step (diff size against the estimate, protected paths from the repo's settings, repeated test failures, new dependencies or schema changes, spec ambiguity) and pauses with the person's choices when one fires.
+- **Going back** (FR-95): each stage records a checkpoint commit. Going back pushes the current head to a backup branch, resets the run's branch to the checkpoint, and closes any open pull request, all through the Action service.
+- **Manual edits** (FR-91): a person's commit re-runs the checks and evidence automatically as a short run.
+- **Pull request review tasks** (FR-97, 0028): opening a pull request creates a review task. A reviewer's approval or request for changes is submitted to GitHub with that person's authorization. Requested changes become Feedback proposals (FR-98).
+- **Ask and scratch sessions** (FR-105): asking runs a read-only agent session over a checkout of the repo, through the gateway, without a task. A scratch session is a draft task: it gets a branch and runs like any task, but creates no tracker item or pull request until it's promoted.
 - **Change review in Orc** (FR-90, 0025): Develop's run ends with the change held for review, so no run is in progress while people review (FR-7); the sandbox is kept until the idle limit (FR-64). People review the branch's diff, change-review comments, and evidence in the web app. Requesting changes is a follow-up (FR-78): Orc restates the work and starts a new run only after confirmation. Approving is the person's action that starts Ship (FR-19), which opens the pull request.
 - **Follow-up:** a confirmed follow-up starts a new run linked to the previous one and seeded with its results (FR-78).
 - **Watching proposed changes:** a long-lived workflow per open proposed change reacts to CI results, base-branch movement, and review activity (FR-86, FR-88).
@@ -197,6 +205,7 @@ flowchart LR
 - Pods get **no AWS credentials** and **can't reach the instance metadata service**.
 - Network policies allow only the gateway, package registries, and other Admin-allowlisted destinations; everything else is blocked and logged (Q-SEC-5).
 - The repo is cloned with a short-lived, read-only token minted by Orc for that repo only, which is removed after checkout.
+- The terminal (FR-104) opens only on a paused or taken-over run's sandbox, adds no credentials and no network access, records every command, and closes when the sandbox is destroyed.
 
 ### Declared actions (0009)
 Each step of each workflow declares the action types it may request:
@@ -214,7 +223,7 @@ The agent's tools write requests; they don't act. The Action service checks each
 For every model request: authenticate the sandbox by run, mask PII using the Presidio Analyzer sidecar with consistent per-run placeholders (Q-SEC-3, 0022), enforce the approved model version (FR-82) and spending cap (FR-48), forward through the organization's `LlmProvider` (0019), record tokens, cost, and masked PII types (FR-47), and restore real values in the response before it reaches the sandbox (0022).
 
 ### Untrusted input (Q-SEC-1)
-Work item text, comments, repo content, and conversations are always data in the agent's context, never instructions to Orc's own code. Content that looks like an attempt to steer Orc is flagged (Q-SEC-7), but the boundary above is what stops it.
+Work item text, comments, repo content, steering messages, and conversations are always data in the agent's context, never instructions to Orc's own code. Content that looks like an attempt to steer Orc is flagged (Q-SEC-7), but the boundary above is what stops it.
 
 ## 8. Learning system
 

@@ -10,6 +10,13 @@ Orc is an organization's engineering memory and quality system for AI-assisted w
 
 To do that, Orc lets a team hand well-defined engineering work to AI, across any of their repos, while humans stay in control of every decision that matters. That work includes specifying, developing, and shipping features, investigating bugs, and drafting documentation. Orc gives the team one place to see what the AI did, what it cost, and whether it was any good.
 
+### Goals
+
+* **Replace the IDE as the engineer's daily workspace.** Engineers no longer write most code by hand. They work with AI to write a good specification, review what it did, and tell it what to change. Engineers should start every task in Orc and leave only to debug (0029).
+* **Let designers and product people complete simple changes themselves.** The organization's target is for half of its tickets to be completable by a non-engineer, with an engineer still reviewing the code (FR-97).
+* **Make every correction count.** Feedback given during review becomes lessons that improve future work (FR-41, FR-67).
+* Orc orchestrates existing coding agents; it doesn't compete with them (0005, 0011). It doesn't replace the issue tracker or GitHub.
+
 Orc is for any organization that tracks work in GitHub Issues or Jira and keeps code on GitHub (GitLab and other issue trackers [later]). Each organization's data is isolated from every other's.
 
 ### What Orc is built around
@@ -39,7 +46,7 @@ Turning an issue into a pull request is now available inside issue trackers and 
 
 **In scope for v1:** one organization; GitHub; the spec, develop, ship, investigate, and document workflows; a web interface; notifications through the issue tracker and email.
 
-**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than GitHub Issues and Jira Cloud; LLM providers other than Bedrock and the Anthropic API; organization-defined custom workflows; long-lived interactive remote environments; a command line; live previews of a run's app.
+**Out of scope for v1:** GitLab; multiple organizations and the Operator role; chat tools (e.g. Slack, Microsoft Teams); issue trackers other than GitHub Issues and Jira Cloud; LLM providers other than Bedrock and the Anthropic API; organization-defined custom workflows; long-lived interactive remote environments (the terminal in FR-104 lasts only as long as a run's sandbox); a command line; live previews hosted by Orc (links to an organization's own preview environments are in scope, FR-96).
 
 ## 3. Glossary
 
@@ -61,6 +68,13 @@ Turning an issue into a pull request is now available inside issue trackers and 
 | **Lesson** | Something learned — by a person or from past work — that Orc should apply to future work. |
 | **Policy** | Admin-set rules on what Orc may do: which workflows run on which repos, which paths it may change, required approvals, autonomy thresholds, spending caps. |
 | **Build-and-check settings** | How to install, build, lint, test, and run a repo's code. |
+| **Stage** | A step of a task's journey shown in the web app. A Develop task's stages are Spec, Analyze, Build, Review, Ship, and Feedback (0027). |
+| **Fast lane** | A lighter path for small, low-risk tasks that skips the separate plan approval (FR-93). |
+| **Tripwire** | A condition that stops a fast-lane run and asks a person how to continue (FR-94). |
+| **Walkthrough** | How Orc presents a developed change for review: what it did, why, and proof for each acceptance criterion (FR-96). |
+| **Pull request review task** | A review of one of Orc's pull requests, open to every eligible engineer on the team rather than assigned (FR-97). |
+| **Draft task** | A task that exists only in Orc, such as a scratch session, until a person promotes it and Orc creates the tracker item (FR-105). |
+| **Code owners** | The people a repo's `CODEOWNERS` file names for a path. They set protected paths and fast-lane thresholds (FR-93). |
 
 ## 4. Users
 
@@ -73,9 +87,9 @@ A role tells Orc what kind of knowledge a person has — so Orc knows **how to c
 | Role | Needs to |
 |---|---|
 | **Engineer** | Hand work items to Orc, review its code, approve, redirect, or take over its work, use the same skills locally |
-| **Designer** | Provide designs for a work item and confirm that what Orc builds matches them |
+| **Designer** | Provide designs for a work item, confirm that what Orc builds matches them, and complete simple changes themselves |
 | **Support** | Get a trustworthy diagnosis of a customer-reported bug without needing an engineer |
-| **Product** | Get well-specified work items and accurate first drafts of documentation |
+| **Product** | Get well-specified work items and accurate first drafts of documentation, and complete simple changes themselves |
 
 ### Access levels
 
@@ -117,10 +131,10 @@ Givens, not choices:
 * **FR-6** — Users start every workflow from Orc's web interface, on a task. A task is a work item, either created in Orc (Orc then creates it in the issue tracker) or created in the tracker. Tracker changes update the task but never start a run.
 * **FR-89** — Users can create a task in Orc by choosing the one repo it affects and describing the work. Orc creates the matching work item in the organization's issue tracker, which stays the record that project managers plan from.
 * **FR-7** — A work item has at most one run in progress at a time.
-* **FR-8** — Only an explicit action by a permitted user starts or continues a run. Commenting never does on its own. Explicit actions include: starting a workflow, answering Orc's questions and asking it to continue, an approval decision, a reviewer requesting changes on Orc's proposed change, confirming a follow-up request (FR-78), and a CI failure or merge conflict on Orc's own proposed change where Admin policy lets Orc respond to those automatically (FR-86).
+* **FR-8** — Only an explicit action by a permitted user starts or continues a run. Commenting never does on its own. Explicit actions include: starting a workflow, answering Orc's questions and asking it to continue, a steering message to a running agent (FR-103), an approval decision, a reviewer requesting changes on Orc's proposed change, confirming a follow-up request (FR-78), and a CI failure or merge conflict on Orc's own proposed change where Admin policy lets Orc respond to those automatically (FR-86).
 * **FR-9** — When a run continues after stopping for input, Orc picks up where it left off — it doesn't repeat work or re-ask answered questions.
 * **FR-10** — A permitted user can cancel a run at any time. Orc stops cleanly and reports what it had done.
-* **FR-11** — An engineer can take over a run's work — Orc stops, and its branch and findings are left in a state a person can continue from.
+* **FR-11** — An engineer can take over a run's work — Orc stops, pushes its work so far, and leaves its branch and findings in a state a person can continue from. Orc offers to open the branch in the engineer's editor (VS Code, Cursor, or JetBrains) and asks, optionally, why they're leaving Orc; the answers are measured (§8).
 * **FR-87** — When a person has added commits to Orc's branch and asks Orc to continue, Orc builds on their commits. It never rewrites or discards a person's work (e.g. no force-push over it), and it says what it understood their changes to do before going further.
 * **FR-12** — If a work item changes while Orc is working on it, Orc notices, says so, and uses the latest version when work continues.
 * **FR-13** — Orc stops and asks for help, rather than looping, when repeated attempts at a step aren't making progress. Every retry loop has a limit: attempts at a step, review-and-revise rounds (FR-15), and full check runs (lint and tests). Admins can set each limit; defaults are small (single digits; check runs no more than 2–3). Reaching a limit stops the run and says which limit was hit and what was tried.
@@ -137,9 +151,9 @@ Givens, not choices:
   * When designs are attached, the running result is checked against them.
   * Commits are organized so a reviewer can follow them in order — each commit does one kind of thing (e.g. a refactor separate from the behaviour change it enables).
 * **FR-90** — When Develop finishes, its run ends with the change held for a **change review** in Orc: the diff, change-review comments, and the verification evidence for each acceptance criterion. No run is in progress while the change waits (FR-7). People either request changes, which is a follow-up (FR-78): Orc restates what it will do and starts a new run only once they confirm. Or they approve, which is the person's action that starts Ship (FR-19) to open the proposed change. [later: open the running app from the run's environment to try it.]
-* **FR-91** — Engineers can edit a developed change directly during review, on repos they can work on. The edit becomes a commit on the run's branch, attributed to them and checked like any other push (FR-85). The change's checks and evidence are then marked out of date and re-run only when someone asks; it can't be approved until they pass again.
+* **FR-91** — Engineers can edit a developed change directly during review, on repos they can work on, in the walkthrough or the diff. The edit becomes a commit on the run's branch, attributed to them and checked like any other push (FR-85). The change's checks and evidence then re-run automatically; it can't be approved until they pass again.
 * **FR-92** — Comments people make on a task in Orc are also posted to the task's item in the issue tracker, attributed to them, and the tracker's comments appear in Orc.
-* **FR-16 — Ship:** after the change is approved in Orc (FR-90), open it as a proposed change that a reviewer can act on (see [Reviewability](#reviewability)). Revise it when a reviewer requests changes. Report when it's ready for a human to merge.
+* **FR-16 — Ship:** after the change is approved in Orc (FR-90), open it as a proposed change that a reviewer can act on (see [Reviewability](#reviewability)), and create its pull request review task (FR-97). Revise it when a reviewer requests changes (FR-98). Report when it's ready for a human to merge. The task ends when the pull request merges.
 * **FR-17 — Investigate:** turn a bug report into one of: a confirmed root cause with a recommended next step, specific questions for the reporter, or an escalation to engineering. Never changes code.
   * Orc reproduces the bug where it can, and says whether a root cause was confirmed by reproducing it or only inferred from evidence.
   * When the fix needs code, Orc adds a proposed fix to the work item, written so that Develop can start from it once a person has reviewed it.
@@ -147,6 +161,29 @@ Givens, not choices:
 * **FR-18 — Document:** turn a documentation request and its sources into a draft that is accurate to the code and sources and consistent with the organization's knowledge sources. Never publishes.
   * Documentation that lives in the task's repo becomes a change that goes through change review (FR-90) and Ship like code; a person merges it.
   * Documentation that lives elsewhere (help center, knowledge base) is attached to the work item as an approved draft and can be downloaded as Markdown; a person publishes it. [later: publishing to external documentation tools through an integration contract.]
+
+### Task flow and review (0027, 0028)
+
+* **FR-93 — Fast lane:** Orc proposes the fast lane when it creates or starts a task whose estimated change is small and low-risk: about 3 files and 50 lines or fewer, no protected paths, 3 or fewer testable acceptance criteria, tests covering the area, and similar tasks in the repo that went through without rework. The assignee confirms or overrides it. A fast-lane task skips the separate plan approval, unless Admin policy requires it (FR-20, FR-27); change review (FR-90) and pull request review (FR-97) always happen. Each repo's protected paths and thresholds are set by its code owners. A fast-lane task that is reverted or reopened tightens its repo's thresholds.
+* **FR-94 — Tripwires:** a fast-lane run stops and says which tripwire fired when the change outgrows its estimate, touches a protected path, fails tests twice, needs a new dependency or schema change, or meets ambiguity in the specification. The person chooses: move to the full lane (keeping the draft), narrow the scope (Orc proposes a smaller task and a new task for the rest), continue anyway (Engineers only; recorded, and the path's code owners are added to the review), or hand to an engineer.
+* **FR-95 — Going back a stage:** a permitted user can send a task back to an earlier stage. Orc lists what will reset and what can't be undone outside Orc, and acts only once the person confirms. It resets the code to that stage's checkpoint, keeps the current code on a backup branch, clears verifications and file check-offs, and closes the pull request if one is open. Going back can be undone until the task moves forward again.
+* **FR-96 — Walkthrough:** a change review (FR-90) presents the change as a walkthrough: a short summary of what Orc did; for each acceptance criterion, what changed, why, and its proof (before-and-after screenshots at desktop and mobile widths, a comparison with attached designs, the test that covers it); the states Orc checked (such as empty, loading, error, mobile, and long text); the decisions Orc made, with the alternatives it rejected; and what it's unsure about. When the repo has a preview environment, the walkthrough links to it. The person accepts each step or requests a change on it, optionally saving the request as a lesson; requests are sent together as one follow-up (FR-78). Approval needs every step accepted and every criterion verified. Engineers also see each step's code and a diff view with the changed files, Orc's importance marks, and its notes on the lines they're about (FR-60, FR-61); other roles see no code (FR-51).
+* **FR-97 — Pull request review tasks:** every pull request Orc opens needs approval from one engineer who isn't the task's assignee (C-6). Orc creates a review task for it that is open to the team rather than assigned; an eligible engineer claims it. The assignee and non-engineers can't claim or approve it. The review shows: why the change exists, the agreed criteria and who verified each, what's out of scope, what was already checked and by whom, and the reviewer's job; the changes ordered by risk, with the high-risk ones required before approval; for each, how it could break and whether a test covers each case; blast radius (callers, schema changes, feature flags, rollback); and comments tagged blocking, suggestion, or question. Approval is posted to GitHub as the reviewer, and can't be given while a blocking comment is open. Re-reviews show only what changed since the reviewer's last review.
+* **FR-98 — Feedback on a pull request:** until the pull request merges, Orc turns each review comment, tracker comment, and automated review comment into a proposal: change and reply, reply only, or no action, with its reason. The assignee decides each proposal, one at a time. Orc builds the approved changes together when the person asks, the person reviews only what changed, and pushing posts the replies and resolves those threads. Comments needing no action are kept, collapsed, with Orc's reason.
+* **FR-99 — Editing a task:** people can edit a task's problem, scope, notes, acceptance criteria, and assignee in Orc, or ask Orc to make the edit. Each edit is written to the tracker item as the person (or as Orc, for its edits), recorded, and can be undone. The assignee can change at any stage; problem and scope can change at any stage, but after Build has started the change goes back to Analyze (FR-95); criteria can change only in Spec and Analyze; notes never change the stage. Problem and scope can't change while a run is in progress.
+* **FR-100 — Archiving:** a permitted user can archive a task by giving a reason: no longer needed, duplicate of a named task, done another way, won't do, or another reason in their own words. Archiving also archives the tracker item with the reason. Archived tasks leave every list and can be restored, which reopens the tracker item.
+* **FR-101 — Gone-quiet tasks:** tasks with no activity for 30 days are listed for a decision. Keeping one posts "<name> decided to keep this task open" to the task and the tracker item, which starts the next 30 days. Archiving follows FR-100.
+* **FR-102 — Home:** each person has an overview of their work: agents running (with step, time, cost, and last action), tasks that need them, tasks due soon (due dates come from the tracker and are optional), tasks ready for their review, tasks not yet started, gone-quiet tasks, pull request review tasks they can claim (Engineers), tasks waiting on others (for non-engineers, waiting on engineer review), and recently done tasks. A task appears in every list it belongs to.
+
+### Working in Orc (0029)
+
+* **FR-103 — Steering a run:** a person who may continue a run can send a running agent a message, delivered at once (interrupting the current step) or after the current step. Messages are part of the run record.
+* **FR-104 — Terminal:** Engineers can open a terminal into a run's execution environment while the run is paused or taken over. It has the same credentials (none) and network limits as the agent (Q-SEC-4, Q-SEC-5), its commands are recorded for audit, and it ends with the environment.
+* **FR-105 — Ask and scratch sessions:** people can ask questions about a repo's code without a task, and get answers that link to the code. An answer can become a task, or a scratch session: a draft task with its own branch that creates no tracker item or pull request until a person promotes it.
+* **FR-106 — Repo browser:** Engineers can browse a task's repo at its branch: files, search across files and code, and each name's definition and usages.
+* **FR-107 — Agent transcript:** the run record (FR-77) includes every file the agent read, search it ran, command, test run, and edit, shown to Engineers.
+* **FR-108 — Merge conflicts:** when a conflict needs a person (FR-86), Orc shows the target branch's version, the change's version, and its proposed merge; an Engineer accepts the proposal, edits it, or keeps either side.
+* **FR-109 — Keyboard:** every action in the web app is available from a command palette and has a keyboard shortcut.
 
 ### Reviewability
 
@@ -275,7 +312,8 @@ Givens, not choices:
 ### Roles and access
 
 * **FR-57** — What a person may work on comes from their roles; what they may manage comes from their access level, scoped to their teams (Managers) or the whole organization (Admins). Admins can exclude a repo from any workflow.
-  * Which workflows each role may start is set by Admins. Defaults: Engineers start any workflow; Support starts Investigate and Spec; Product starts Spec and Document; Designers start Spec. Anyone who can see a task can see its evidence and design comparison.
+  * Which workflows each role may start is set by Admins. Defaults: Engineers start any workflow; Support starts Investigate and Spec; Product starts Spec, Develop, and Document; Designers start Spec and Develop. Anyone who can see a task can see its evidence and design comparison.
+  * Only Engineers can take over, edit code, use the terminal, continue past a tripwire, resolve merge conflicts by hand, or review pull requests (FR-11, FR-91, FR-94, FR-97, FR-104).
 * **FR-58** — People sign in with their organization's existing identity provider.
 
 ## 7. Quality requirements
@@ -351,6 +389,10 @@ How an organization knows Orc is working:
 * **Document:** how much drafts change before publishing.
 * **Cost:** cost per merged change, per confirmed diagnosis, and per published document.
 * **Adoption:** active users and runs per team over time.
+* **Non-engineer work:** share of tickets completed by a designer or product person (target: half), and the share of their changes that pass engineer review without rework.
+* **Engineers in Orc:** how often engineers leave Orc for an editor, and why (FR-11), over time.
+* **Fast lane:** share of tasks in the fast lane, tripwire rate, and reverts or reopens of fast-lane changes.
+* **Pull request review:** time from a review task opening to its claim and to approval.
 
 ## 9. Open questions ⚠️
 
