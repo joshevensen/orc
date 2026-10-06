@@ -30,5 +30,9 @@ Requirement IDs (FR-, Q-, C-) refer to [requirements.md](../requirements.md).
 | [0022](0022-pii-masking-presidio.md) | PII masking with Presidio; real values restored in responses | Accepted, verify early |
 | [0023](0023-host-on-eks.md) | Host Orc on EKS in AWS; drop DigitalOcean | Accepted |
 | [0024](0024-sandboxes-on-eks-karpenter.md) | Execution environments on EKS with Agent Sandbox, gVisor, and Karpenter | Accepted, verify early |
-| [0025](0025-web-app-is-the-workspace.md) | The web app is Orc's workspace; no CLI; review happens in Orc before the PR | Accepted |
-| [0026](0026-one-repo-per-task-and-run-records.md) | One repo per task; run records instead of conversation | Accepted |
+| [0025](0025-web-app-is-the-workspace.md) | The web app is Orc's workspace; no CLI; review happens in Orc before the PR | Accepted; partly superseded by 0029, 0030 |
+| [0026](0026-one-repo-per-task-and-run-records.md) | One repo per task; run records instead of conversation | Accepted; partly superseded by 0029 |
+| [0027](0027-task-pipeline-and-fast-lane.md) | The task pipeline, fast lane, and tripwires | Accepted |
+| [0028](0028-review-walkthrough-and-pr-review-in-orc.md) | Review is a walkthrough; pull request review happens in Orc | Accepted |
+| [0029](0029-engineers-work-in-orc.md) | Engineers work in Orc, not only at checkpoints | Accepted |
+| [0030](0030-editing-and-archiving-through-the-tracker.md) | People edit and archive tasks in Orc; the tracker stays the record | Accepted |

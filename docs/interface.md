@@ -1,179 +1,199 @@
 # Orc — Interface
 
-This document says **how Orc's web app is laid out and behaves**. What it must do is in [requirements.md](requirements.md) (mainly FR-6, FR-56, FR-77, FR-89 to FR-92); why the web app is the main interface is in [ADR 0025](decisions/0025-web-app-is-the-workspace.md), and why tasks are single-repo with run records instead of conversation is in [ADR 0026](decisions/0026-one-repo-per-task-and-run-records.md). Visual design (look, spacing, colour) is done separately; this document covers structure and behaviour.
+This document says **how Orc's web app is laid out and behaves**. What it must do is in [requirements.md](requirements.md) (mainly FR-6, FR-56, FR-77, FR-89 to FR-109). The decisions behind it are in the ADRs: the web app as the workspace ([0025](decisions/0025-web-app-is-the-workspace.md)), single-repo tasks and run records ([0026](decisions/0026-one-repo-per-task-and-run-records.md)), the pipeline and fast lane ([0027](decisions/0027-task-pipeline-and-fast-lane.md)), the review walkthrough and pull request review ([0028](decisions/0028-review-walkthrough-and-pr-review-in-orc.md)), engineers working in Orc ([0029](decisions/0029-engineers-work-in-orc.md)), and editing and archiving through the tracker ([0030](decisions/0030-editing-and-archiving-through-the-tracker.md)). The visual design, with screens for every stage, is in [design/](design/README.md).
 
 ## 1. Principles
 
 - **Tasks, not sessions.** Every screen hangs off a task (a work item in one repo), so comments, runs, reviews, and costs trace back to real work.
-- **Asynchronous.** People don't steer a run while it works. They act at checkpoints: answering questions, reviewing, approving.
-- **The issue tracker is the record.** The task page looks like an issue page, but edits to an item's description go to the tracker as proposed edits, not into a second copy. Comments made in Orc are posted to the tracker. Mentions are left to the tracker.
-- **Explicit actions only.** Writing a comment never starts or continues a run on its own (FR-8). Runs start, continue, and stop through buttons.
+- **Explicit actions only.** Writing a comment never starts or continues a run on its own (FR-8). Runs start, continue, stop, and are steered through buttons.
+- **Work happens in Orc.** Engineers start every task here and leave only to debug; designers and product people complete simple changes without code (0029, 0028).
+- **The issue tracker is the record.** Project managers plan there. Orc reads items, and writes back status, comments, and edits people make in Orc (FR-99).
+- **Prove it, don't describe it.** Orc shows evidence for each acceptance criterion: screenshots, test results, output. Reviewers judge results, not explanations (FR-15).
 - **Show the record, don't narrate it.** Why Orc did something is answered by the run record (FR-77), not by asking a model.
 - **Right detail for the role.** Engineers see code and run detail; other roles see plain-language summaries and evidence (FR-51).
+- **One thing asks for attention.** The current stage and the next action are the loudest things on screen, and the action bar has one primary button. Moss (the accent colour) means interactive or active; static things are neutral.
 - **Everything through the API.** The web app has no backend of its own and can do nothing the API can't (FR-54).
 
 ## 2. Layout
 
-Three columns. The side columns can be collapsed; the middle column can't.
+Every page shares a header. The task page has a pipeline under it and three columns.
 
 ```
-┌──────────────┬───────────────────────────────┬────────────────────────┐
-│ Navigation   │ Task                          │ Work product           │
-│              │                               │ [Output|Evidence|      │
-│ + New task   │ Title          Status ▾       │  History]              │
-│ Search       │ Spec, criteria, links         │                        │
-│              │ Activity feed                 │ file.ts ▾  1 / 7  ‹ ›  │
-│ Needs you    │   comments, Orc's messages,   │                        │
-│ Running      │   run events                  │   diff of one file     │
-│ For review   │                               │                        │
-│ Done         │ ┌───────────────────────────┐ │                        │
-│              │ │ Control panel (fixed)     │ │                        │
-│ Insights …   │ │ comment box  + actions    │ │                        │
-└──────────────┴─┴───────────────────────────┴─┴────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│ ORC (home)   ‹ [ WEB-482 · 5 need you  ▾ ] ›   /New task/   Ask ⌘K  (JE)   │
+│              [ Task title              ]                                  │
+├───────────────────────────────────────────────────────────────────────────┤
+│  SPEC  ›  ANALYZE  ›  BUILD  ›  REVIEW  ›  SHIP  ›  FEEDBACK               │
+├───────────────┬─────────────────────────────────────┬─────────────────────┤
+│ Details  Edit │ [Stage screen]          (open)      │ Criteria  3/4  Edit │
+│ Problem  Edit │                                     │  ✓ criterion        │
+│ Scope    Edit │                                     │  ✓ criterion        │
+│ Notes    Edit │                                     │  ? verify by hand   │
+│               │ [Code]                  (closed)    │                     │
+│ (scrolls)     │ [Terminal]              (closed)    ├─────────────────────┤
+│               │ [Log]                   (closed)    │ Next action         │
+│               │                                     │ hint · [Primary]    │
+└───────────────┴─────────────────────────────────────┴─────────────────────┘
 ```
-
-- **Collapsing.** Each side column has a collapse toggle; the choice is remembered per person.
-- **Review mode.** For reviewing, one action collapses the navigation and widens the work-product column, keeping the task's comments visible. The work-product column can also expand to full width.
-- **System banners.** Across the top of every affected page: Orc is paused for the organization, a workflow, or a repo (FR-83); a spending cap has been reached (FR-48); an integration is disconnected.
-- **Desktop first.** On narrow screens the side columns become drawers.
-
-## 3. Navigation (left)
-
-- **New task** (FR-89):
-  - Choose **one repo** (FR-30). Work that needs another repo becomes a linked task.
-  - Tracker details: for Jira, the project and issue type; for GitHub Issues, the issue is created in the task's repo unless the organization has set a different issues repo.
-  - Describe the work and optionally attach designs.
-  - Optionally choose the first workflow to start; otherwise the task is created without a run.
-  - Orc creates the matching item in the issue tracker.
-- **Search** across tasks.
-- **Tasks grouped by state** (§7):
-  - **Needs you** (with a count; it's the in-app notification, §9): a question from Orc, an approval, a change ready for your review, or a pull request needing a revision.
-  - **Queued or running:** with queue position when waiting for capacity (FR-49).
-  - **Ready for review:** work waiting for anyone's review.
-  - **Done:** shipped, merged, or closed. Older items are paged.
-- Tasks from the issue tracker (created by project managers) appear alongside tasks created in Orc.
-- **Below the task list:** Insights, Learning, Settings (§8), shown according to access level.
-
-## 4. Task page (middle)
-
-Modelled on an issue page: content on top, activity below, and a fixed control panel at the bottom.
 
 **Header**
-- Title, tracker key and link, status, the workflow and step it's in, assignee or requester, the repo.
-- Links: tracker item, branch, pull request (once opened), designs, and linked tasks (FR-32).
+- **ORC logo** goes to Home (§3).
+- **Task switcher:** the task's key, how many tasks need you, and its title. Selecting it opens the task list (§4). The previous and next buttons beside it move between tasks that need you, not through every task.
+- **New task** (FR-89), **Ask** (FR-105, §10), and **⌘K**, the command palette (FR-109, §10).
+- **Avatar menu:** name and role, Settings, Profile, Account, Log out.
 
-**Body**
-- **Description** from the tracker, read-only in Orc. Spec's proposed edits are reviewed in the Output tab (§5).
-- **Specification and acceptance criteria.** Each criterion shows its verification evidence (test, output, or screenshot), or says plainly that it couldn't be verified (FR-15). Selecting a criterion opens its evidence in the right column.
+**Pipeline.** The task's stages (§5). Each stage reads done, current, not started, or skipped.
 
-**Activity feed**
-- One chronological feed: people's comments, tracker comments, Orc's messages and questions with their replies, and run events (started, waiting, finished, failed, cost so far).
-- Comments posted in Orc are also posted to the tracker, attributed to the person, and tracker comments appear in the feed (FR-92).
-- No mentions: `@name` in an Orc comment is posted as plain text. To notify someone, mention them in the tracker. Orc's own messages reach people through notifications (FR-79, FR-80).
+**Left column: task info.** Details, Problem, Scope, and Notes, always open, scrolling as one column. Each has an Edit button (§7). Details holds the repo, requester, assignee, the tracker item, links (branch, designs, pull request), the lane, the sandbox (Engineers), and a run summary: check runs, review rounds, spend, and run time so far. Scope has two parts, In scope and Out of scope.
 
-### Control panel
+**Middle column: the work.** An accordion, so the open section gets the full height: the current stage's screen, **Code** (Engineers, §6), **Terminal** (Engineers, FR-104, §10), and **Log** (the run record and comments, §8). Opening one closes the others. The stage's screen is open by default.
 
-Fixed to the bottom of the middle column, like a chat composer, and always visible.
+**Right column: criteria and the next action.** Acceptance criteria scroll inside their panel, each with its status and evidence. The **action bar** is pinned to the bottom-right corner: one line of guidance and the buttons for this state, primary first.
 
-- **Comment box.** Posts a comment to the task and the tracker. It never starts a run on its own.
-- **Action buttons** for the task's current state (§7). Only the actions the person's role and access allow are shown.
-- **Request changes** turns the comment into a change request: Orc restates what it will do and which workflow it will use, and starts the follow-up run once the person confirms (FR-78).
+**Status strips** appear under the pipeline when something just happened that can be undone: an edit, an archive, going back a stage, taking over.
 
-## 5. Work product (right)
+**System banners** across the top of every affected page: Orc is paused for the organization, a workflow, or a repo (FR-83); a spending cap has been reached (FR-48); an integration is disconnected.
 
-Three tabs: **Output**, **Evidence**, and **History**. The Output tab adapts to what the task's latest workflow produced.
+**Desktop first.** On narrow screens the side columns become drawers.
 
-### Output
+## 3. Home
 
-| Workflow | Output tab shows | Review actions |
-|---|---|---|
-| **Spec** | The proposed edits to the item's description, as a before-and-after view | Accept (writes to the tracker), edit, or reject (FR-14) |
-| **Develop** | The code change (below) | Change review: approve or request changes (FR-90) |
-| **Ship** | The pull request: status, CI, and reviewer activity from GitHub | Revise when CI fails or a reviewer asks for changes (FR-16, FR-86) |
-| **Investigate** | The finding: confirmed root cause (or what's still unknown), whether it was reproduced, the recommended next step, and which repos were examined (FR-17, FR-32) | **Accept finding**, **Escalate to engineering**, **Ask a follow-up** (below) |
-| **Document** | The draft, rendered, with a diff against the previous draft | Comment, request changes, or approve; approval hands the draft on but Orc never publishes (below, FR-18) |
+The starting point (FR-102), reached from the logo. One page for "what's going on with my work". A task appears in every list it belongs to; each list answers a different question.
 
-**Investigate findings** (FR-17). The actions follow the kind of finding:
+- **Count buttons** across the top, one per list, each jumping to its list.
+- **Agents running:** every active run the person started, with the agent, current step, time, cost, and last action. A run waiting on the person is flagged. Each row has Open and Pause; Engineers also get Take over. Shows how many run slots the team is using (FR-49).
+- **Needs you** (the main list): questions, approvals, tripwires, failed checks, and feedback to decide.
+- **Ready for your review:** changes and findings Orc finished.
+- **Due soon:** tasks with a due date in the next 7 days. Due dates come from the tracker and are optional; tasks without one don't appear here.
+- **To do:** tasks with no run yet.
+- **Gone quiet** (FR-101): tasks with no activity for 30 days. **Keep** posts "<name> decided to keep this task open" to the task and the tracker, which restarts the 30 days. **Archive** asks for a reason (§11).
+- **PR reviews** (Engineers): pull request review tasks waiting for a reviewer (FR-97, §9).
+- **Waiting on others:** tasks blocked on someone else. For Designers and Product this is **Waiting on engineer review**, showing where their changes sit until an engineer approves the code.
+- **Recently done:** merged or closed in the last 7 days.
 
-| Finding | Action | What happens |
-|---|---|---|
-| Root cause found, needs code | **Accept finding** | The finding and its proposed fix are written to the tracker item. The task returns to New with **Start Develop** available; accepting never starts Develop itself (FR-19). |
-| Root cause found, no code needed (already fixed, or a manual action) | **Accept finding** | The finding is posted to the tracker and the task is marked Done. |
-| Questions for the reporter | (automatic) | Orc posts the questions to the tracker item and the task waits for input. |
-| Orc couldn't get far enough | **Escalate to engineering** | The task is assigned to an Engineer or the repo's team, appears under their Needs you, and a tracker comment says why. |
+## 4. Task list
 
-On any finding, **Ask a follow-up** works like Request changes: Orc restates what it will investigate next and runs only once the person confirms (FR-78). There's no separate reject; disagreeing is a follow-up.
+The quick switcher, opened from the task switcher or the command palette: what needs attention now, from any screen. It's a modal with search and a Close button, scrolling when needed. Groups: Needs you, Queued or running, Ready for review, Done, PR reviews open to your team (Engineers), and Archived (with Restore).
 
-**Document drafts** (FR-18). Where an approved draft goes depends on where the documentation lives:
-- **In the task's repo** (a README, a `docs/` folder): the draft becomes a change in the repo and goes through change review and Ship like code. A person merges it.
-- **Anywhere else** (help center, knowledge base): the approved draft is attached to the tracker item and can be downloaded as Markdown. A person publishes it.
-- Publishing to external documentation tools is [later], behind a new integration contract.
+## 5. Pipeline and stages
 
-**Code changes** (Develop):
-- **One file per page.** A dropdown lists the changed files; next and previous buttons and keyboard shortcuts move between them. When the change is a stack of pull requests, a stack selector sits above the file dropdown.
-- The dropdown shows, for each file, whether this person has marked it **reviewed** and how many comments it has. Source files come first; generated and lock files are listed last and collapsed.
-- **Line comments** on the diff, called change-review comments (FR-90). They're part of the change review and a source for learning (FR-67).
-- **Manual edits** (Engineers only, on repos they can work on, FR-91):
-  - An Engineer can edit the file directly in the diff view.
-  - Saving creates a commit on the task's branch, authored by that person, made through the Action service (which still runs the secret scan, FR-85). Orc builds on people's commits and never rewrites them (FR-87).
-  - After a manual edit, the evidence and checks are marked **out of date**. Orc re-runs them only when someone asks (**Re-run checks**). Approval is blocked while checks are out of date.
-  - Manual edits are recorded as corrections and are a strong learning signal (FR-67).
-- Editor and diff component: CodeMirror 6 with its merge view (`@codemirror/merge`), which shows the diff and allows editing in one component. To be added to the approved packages when the screen is built (ADR 0021).
+Each workflow (FR-14 to FR-18) shows as stages in the pipeline (0027). A Develop task's journey:
 
-### Evidence
+| Stage | Workflow | What happens | Main actions |
+|---|---|---|---|
+| **Spec** | Spec (FR-14) | Orc asks questions and proposes the missing detail: problem, scope, acceptance criteria | Reply, **Approve spec** |
+| **Analyze** | Develop, before code (FR-15, FR-20) | Orc judges whether the work is within what it does reliably and proposes a plan | **Approve plan**, **Send back**, **Reject** |
+| **Build** | Develop (FR-15) | Orc writes, reviews, and verifies the change | **Answer and continue**, **Take over**, **Cancel run** |
+| **Review** | Change review (FR-90) | The assignee accepts the change against the spec (§6) | **Approve** (starts Ship), **Request changes** |
+| **Ship** | Ship (FR-16) | Orc opens the pull request and requests a reviewer | **Revise** if CI fails |
+| **Feedback** | Ship, watching (FR-16, FR-86, FR-98) | Orc handles review comments until merge (§6); the task ends at merge | Decide each proposal, **Build approved**, **Push and reply** |
 
-Screenshots, test output, and recordings per acceptance criterion; a design comparison when designs are attached (FR-56). Live previews of the running app are [later] (FR-90).
+Investigate tasks show Spec (optional), Investigate, and Finding; their actions are **Accept finding**, **Escalate to engineering**, and **Ask a follow-up** (FR-17). Document tasks show Spec, Draft, and Review, then Ship when the docs live in the repo (FR-18).
 
-### History
+**Stage states.** Done stages are outlined with a check. The current stage is solid: moss normally, orange when Orc is blocked (a question, a tripwire), red on an error. The current stage has no icon; its text is enough. Skipped stages are striped.
 
-The run record (FR-77), across every run on the task:
-- Each step with its **decision records**: what was decided, the reason, what was checked, and which lessons were used (FR-71).
-- Where each run stopped and why, actions requested and their outcome, cost, and duration.
-- Search and filters: by run, step, kind of entry (decision, check, action, lesson), and outcome.
+**Going back** (FR-95). Selecting a done stage goes back to it, after a confirmation that lists what resets (code since that stage, criteria verifications, file check-offs) and what can't be undone outside Orc (comments already posted). Code is kept on a backup branch. Going back from Ship or Feedback closes the pull request; a new one opens when the task reaches Ship again. A strip offers **Undo** until the task moves forward again.
 
-## 6. Views by role
+**Fast lane** (FR-93, FR-94). For small, low-risk tasks, Orc proposes the fast lane at intake and the assignee confirms or overrides. The label shows in Details with Orc's reason. It skips the separate plan approval in Analyze, unless an Admin's approval policy requires it (FR-20, FR-27). Change review and the engineer's PR review still happen.
+- **Qualifies:** an estimate of about 3 files and 50 lines or fewer; no protected paths; 3 or fewer testable criteria; tests cover the area; similar tasks in the repo went through without rework. Code owners keep each repo's protected paths and thresholds.
+- **Tripwires** stop a fast-lane run and say which one fired: the change outgrows its estimate, touches a protected path, fails tests twice, needs a new dependency or schema change, or hits ambiguity in the spec. The choices: **Move to the full lane** (to Analyze, keeping the draft), **Narrow the scope** (Orc proposes a smaller task and splits off the rest), **Continue anyway** (Engineers only, recorded, and the protected path's code owners join the review), or **Hand to an engineer** (Designer and Product).
+- A fast-lane task that's reverted or reopened tightens that repo's thresholds.
 
-What the task page shows by default depends on the person's roles (FR-51); anyone can switch to the full view if their access allows.
+## 6. The middle column by stage
+
+**Spec.** Orc's questions and people's replies, then **Approve spec**. Replying to Orc's question is the explicit action that continues the run (FR-8). A spec is complete when it has a problem, what's in scope, what's out of scope, and acceptance criteria that can each be checked; notes are optional. Missing sections show **Missing** in the left column.
+
+**Analyze.** Orc's finding or plan: a heading, a summary, the steps, and any approval requirement from policy (FR-20). An optional feedback box; required to send the plan back.
+
+**Build.** The run's steps with their state. When Orc asks a question, the question and an answer box appear here. When CI fails, Engineers see the failing step and log lines pulled from the CI job; Designer and Product see a plain-language note and **Ask an engineer**. A fast-lane tripwire shows here with its choices.
+
+**Review (change review, FR-90, FR-96).** A **walkthrough**, not a copy of GitHub's file list:
+- **What I did:** two or three sentences, and **Open preview** when the repo has a preview environment.
+- **One step per acceptance criterion:** what changed and why, the proof (before and after screenshots with desktop and mobile views; the design next to the build when designs are attached; the test that covers it), and **Looks right**. Criteria Orc couldn't verify say so and give the person steps to check it themselves (FR-15).
+- **States Orc checked:** empty, loading, error, mobile, long text.
+- **Decisions I made**, each with the alternative Orc rejected.
+- **What I'm unsure about.**
+- Any step can get **Request a change**, optionally saved as a lesson for the repo (FR-41, FR-81). Requests are sent together as one follow-up (FR-78).
+- **Approve** unlocks when every step is accepted and every criterion is verified.
+- **Engineers** see each step's code inline, with **Edit** and **Open in Code**. The **Code** section is the traditional view: the changed files grouped by folder, Orc's importance marks (scrutinize, quick scan), and a diff with Orc's notes on the lines they're about (FR-60, FR-61).
+- **Manual edits** (Engineers, FR-91): editing a snippet or a diff commits as that person through the Action service (FR-85). Checks and evidence re-run automatically, and the change can't be approved until they pass.
+
+**Ship.** The pull request's status and checks.
+
+**Feedback** (FR-98). Every review comment, tracker comment, and AI-review comment on the pull request becomes a row with Orc's proposal (change and reply, reply only, or no action). The person decides each one in a modal, one at a time. Comments needing no action are collapsed with Orc's reason. **Build approved** makes the approved changes in one run; the person then reviews only what changed since their last review; **Push and reply** pushes and posts the replies. When main moves and conflicts with the change, a banner offers **Resolve** (FR-108): main's version, this branch's, and Orc's merge side by side, with **Use Orc's merge**, **Edit the merge**, or keep either side (FR-86). Designer and Product see that Orc merged it and an engineer confirms it in code review.
+
+## 7. Editing the task
+
+Each left-column section and the criteria have an **Edit** button (FR-99, 0030). The edit modal shows the fields, an **Or ask Orc to change it** box, and one line saying what saving will do. Saving writes to the tracker item as the person; every edit is in the Log with who made it, and a strip offers **Undo**.
+
+- **Details:** only the assignee can be edited, at any stage. Repo, requester, and links come from the tracker and GitHub.
+- **Problem and Scope:** editable at any stage. After Build has started, saving goes back to Analyze, through the going-back confirmation.
+- **Notes:** editable any time; never changes the stage.
+- **Criteria:** editable in Spec and Analyze, one per line. Unchanged criteria keep their results. After Analyze they're locked; go back to change them.
+- **Ask Orc to change it** applies Orc's edit directly, recorded and undoable like a manual one. When the edit needs to go back a stage, it waits for that confirmation.
+- Running tasks can't change Problem or Scope until the run pauses.
+
+## 8. Log
+
+The run record (FR-77) and the task's comments in one feed, with filters: All, Comments, Orc messages, Run record, and, for Engineers, **Agent transcript** (FR-107: every file the agent read, search, command, test run, and edit). Steering messages appear here too. Decision records show the decision, the reason, what was checked, and which lessons were used (FR-71). A comment box at the bottom posts to the task and the tracker (FR-92).
+
+## 9. PR review (Engineers)
+
+Every pull request Orc opens needs approval from one engineer who isn't the assignee (SOC2, C-6); one approval is always enough. Orc turns each one into a **pull request review task** (FR-97, 0028): it isn't assigned, and any eligible engineer can claim it, except the one whose task produced it.
+
+- **Queue:** claimed by you, open to the team (with **Claim**), claimed by others, and "You can't review", with the reason.
+- **Left column, context for someone who wasn't there:**
+  - **Brief:** why the change exists, the agreed criteria and who verified each, what's out of scope.
+  - **Already checked:** the assignee's acceptance in Review, CI, and Orc's self-review.
+  - **Your job here:** correctness, security, data integrity, maintainability; not copy and layout.
+- **Middle: a tour, riskiest first.** High-risk stops (money, auth, data, concurrency) must be reviewed before approving; medium-risk stops are optional; low-risk files are grouped into one skim check. Each stop has the code, what it does, and **How this could break**: each case marked Covered (with the test) or No test. Comments are tagged Blocking, Suggestion, or Question. Also **Code** (file tree and diff) and **Conversation** (the pull request's comments).
+- **Right column:** progress by risk, untested paths, blast radius (callers, schema changes, feature flags, rollback), and the reviewer's comments.
+- **Decision:** **Approve on GitHub** unlocks when the high-risk stops are reviewed and no comment is blocking. **Request changes** needs at least one comment; the comments become proposals in the assignee's Feedback queue, and the reviewer gets a re-review of only what changed. Approval is posted to GitHub as the reviewer, with their own GitHub authorization, which is where the SOC2 record lives.
+
+## 10. Engineer tools
+
+For engineers to work in Orc and leave only to debug (0029).
+
+- **Take over** (FR-11, FR-87): pauses the agent, pushes its work so far, and offers to open the branch in VS Code, Cursor, or JetBrains, or shows the `git switch` command. The task reads "<name> has control". **Hand back to Orc** summarizes the person's commits, re-runs checks, and continues. Taking over asks one optional question, **why are you leaving Orc?** (Debugging, A quick fix, Finding my way around, Environment, Something else). The answers measure what Orc still lacks.
+- **Inline edits** in the walkthrough and diff (FR-91, §6).
+- **Repo browser** (FR-106): the task's repo at its branch: files, search across files and code, and select a name to see its definition and every usage.
+- **Agent transcript** in the Log (FR-107, §8).
+- **Sandbox details** in the left column: whether the run's environment matches local (runtime versions, services, seed data, secrets source) and its health.
+- **Command palette (⌘K, FR-109):** every action, filterable, with its keyboard shortcut (j and k between tasks that need you, `/` to ask, `g r` for the repo, `t` to take over, `?` for all shortcuts).
+- **Steer a run** (FR-103): a running task's Build screen has a box to message Orc: **Interrupt now** or **Send after this step**. Each message shows whether Orc applied it or queued it.
+- **Terminal** (FR-104): a shell into the same sandbox the agent uses, while the run is paused or taken over, with suggested commands (run a test, read the log, query the seeded database). Commands are recorded for audit.
+- **Ask the codebase** and **scratch sessions** (FR-105): questions that don't need a task, answered with links to the files; an answer can become a task or a scratch session, a draft task with a branch that stays out of the tracker and pull requests until promoted.
+
+## 11. Archiving
+
+Any task can be archived from Gone quiet or from Details (FR-100, 0030). A reason is required: No longer needed, Duplicate of another task (name it), Done another way, Won't do, or Other (explain). Archiving also closes the item in the tracker with the reason, because the tracker is the record. The task leaves every list; a strip offers Undo, and Restore (which reopens the tracker item) is in the task list's Archived group.
+
+## 12. Views by role
+
+What the task page shows by default depends on the person's roles (FR-51). Anyone can switch to the full view if their access allows.
 
 | Role | Default view |
 |---|---|
-| **Engineer** | Everything: code changes with manual edits, full History |
-| **Designer** | Evidence and design comparison first; code changes hidden by default |
-| **Support** | Investigate findings in plain language, evidence; code and History detail hidden by default |
-| **Product** | Spec and acceptance criteria, evidence, plain-language summaries; code hidden by default |
+| **Engineer** | Everything: code in the walkthrough, the Code section, manual edits, Take over, the agent transcript, PR reviews |
+| **Designer** | The walkthrough with screenshots and design comparison; no code |
+| **Product** | The walkthrough, spec and criteria, plain-language summaries; no code |
+| **Support** | Investigate findings in plain language, and evidence; no code |
 
-## 7. Task states and actions
+Non-engineers never see Take over or Continue anyway; they get **Hand to an engineer** and **Ask an engineer** instead.
 
-The control panel shows the actions for the current state.
+## 13. Where these decisions came from
 
-| State | Shown in navigation as | Main actions |
-|---|---|---|
-| New (no run yet) | Needs you, for its creator | **Start** (choose from the workflows the person's roles may start, FR-57), comment |
-| Waiting for input | Needs you | **Answer and continue**, comment, **Take over**, cancel |
-| Waiting for approval (FR-20) | Needs you | **Approve**, **Send back with feedback**, **Reject** |
-| Queued | Queued or running | Cancel |
-| Running | Queued or running | **Take over**, cancel |
-| Ready for review | Ready for review; Needs you for its requester | **Approve**, **Request changes**, **Re-run checks** (if out of date), comment |
-| Approved, shipping (Ship run) | Queued or running | Cancel |
-| Taken over | Needs you, for the person who took over | **Hand back**, comment |
-| Pull request open | Done (watched, FR-86) | Comment; reviewers act on GitHub |
-| Pull request needs revision | Needs you | **Revise**, comment |
-| Done | Done | **Follow-up** (FR-78), comment |
+The layout, stages, walkthrough, pull request review, engineer tools, editing, and archiving were decided in the design review recorded in ADRs 0027 to 0030, which supersede parts of 0025 and 0026. The design boards in [design/](design/README.md) show each screen with sample data.
 
-- No run is in progress while a task is ready for review (FR-7). **Approve** starts Ship, which opens the pull request (FR-16, FR-19, FR-90); it is disabled while checks are out of date. **Re-run checks** starts a short run that only re-runs checks and evidence.
-- **Request changes**, **Revise**, and **Follow-up** go through FR-78: Orc restates the work and starts a new run only once the person confirms.
-- **Take over** (Engineers, FR-11) stops the run and leaves the branch for the person. **Hand back** (FR-87) lets Orc continue from the branch's current head, including the person's commits; Orc first says what it understood their changes to do.
-- The emergency pause (FR-83) is in Settings and, for Admins, in the header of every page.
+## 14. Other pages
 
-## 8. Other pages
-
-- **First-time setup** (FR-1, FR-3): shown to Admins until done. Connect GitHub (the GitHub App), the issue tracker, the identity provider, email, and the LLM provider (plus Bedrock for embeddings when the provider is the Anthropic API, ADR 0023); then onboard repos, where Orc works out and verifies each repo's build-and-check settings.
-- **Insights:** usage, cost, and quality trends by workflow, team, repo, and over time; skill performance and version comparisons (FR-50, FR-56).
+- **First-time setup** (FR-1, FR-3): shown to Admins until done. Connect GitHub (the GitHub App), the issue tracker, the identity provider, email, and the LLM provider (plus Bedrock for embeddings when the provider is the Anthropic API, ADR 0023); then onboard repos, where Orc works out and verifies each repo's build-and-check settings, and code owners set protected paths and fast-lane thresholds.
+- **Insights:** usage, cost, and quality trends by workflow, team, repo, and over time; skill performance and version comparisons (FR-50, FR-56); how often engineers leave Orc and why (§10).
 - **Learning:** proposed and active lessons, approvals, and conflicts (FR-68, FR-72).
 - **Settings,** by access level: organization, teams and roles (including which workflows each role may start, FR-57), repos and onboarding (FR-3), products (FR-2), policy and approvals (FR-20), spending caps (FR-48), sandbox slots and warm pool (ADR 0024), integrations, the pause switch (FR-83), and the **audit log** (Q-AUD-1): every action record, approval, policy change, pause, and restore, filterable and exportable.
 
-## 9. Delivery
+## 15. Delivery
 
-- **v1 order.** First release: first-time setup, tasks (every workflow, with its Output, Evidence, and History tabs), and Settings including the audit log. Second release: Insights and Learning. The navigation shows only what's released.
-- **Live updates.** Polling through TanStack Query: open tasks and the navigation's counts refresh every few seconds while something is queued or running, and slow down when nothing is. Server-sent events are [later], if polling feels slow or costs too much. Designs show "running" and "last updated" states; they don't depend on which mechanism is used.
-- **Notifications.** No bell or notification centre. "Needs you" in the navigation carries a count, and Orc's messages also go by email and tracker mention as each person chooses (FR-80).
+- **v1 order.** First release: first-time setup, Home, tasks (every workflow and stage), PR review, and Settings including the audit log. Second release: Insights and Learning. The interface shows only what's released.
+- **Live updates.** Polling through TanStack Query: open tasks, Home, and counts refresh every few seconds while something is queued or running, and slow down when nothing is. Server-sent events are [later], if polling feels slow or costs too much.
+- **Notifications.** No bell or notification centre. "Needs you" carries a count, and Orc's messages also go by email and tracker mention as each person chooses (FR-80).

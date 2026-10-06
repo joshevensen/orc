@@ -1,6 +1,6 @@
 # 0025 — The web app is Orc's workspace; no CLI; review happens in Orc before the PR
 
-**Status:** Accepted · **Date:** 2026-10-02 · **Supersedes:** 0003
+**Status:** Accepted; partly superseded by 0029 (asynchronous, interactive sessions, live previews) and 0030 (editing tracker items) · **Date:** 2026-10-02 · **Supersedes:** 0003
 
 ## Context
 0003 made the web UI a place for seeing and deciding, with work started from the issue tracker or a CLI. In practice the work, and the review of it, happens in Orc: engineers, designers, and support people describe tasks, check results, and ask for changes. Project managers need planning features (roadmaps, estimates, hierarchy) that Orc shouldn't rebuild, so they stay in the issue tracker. Maintaining a CLI alongside the web app doubles the interface work for a small team.

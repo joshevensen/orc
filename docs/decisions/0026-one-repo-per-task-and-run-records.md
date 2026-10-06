@@ -1,6 +1,6 @@
 # 0026 — One repo per task; run records instead of conversation
 
-**Status:** Accepted · **Date:** 2026-10-02
+**Status:** Accepted; partly superseded by 0029 (asking Orc questions) · **Date:** 2026-10-02
 
 ## Context
 With the web app as Orc's workspace (0025), three requirements added more interface and system complexity than their value for v1:

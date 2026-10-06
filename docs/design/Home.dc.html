@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orc · Home for engineers</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&amp;family=Chakra+Petch:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#030302; --bg:#060503; --panel:#0b0a05; --raised:#14120a;
+  --amber:#b8ab3e; --amber-dim:#77701f;
+  --line:#2c2a14; --frame:#4a4730; --frame-hi:#7b7758; --grid:rgba(80,76,30,0.30);
+  --text:#e6e2c8; --muted:#a19d7c; --gutter:#878369;
+  --success:#4fd69c; --error:#ff5a4d; --warning:#ff9a3c; --info:#5fb4ff;
+  --f-display:"Michroma",ui-sans-serif,system-ui,sans-serif;
+  --f-head:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --c:16px;
+}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--amber);text-decoration:none}a:hover{color:#cfc463;text-decoration:underline}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.frame{position:relative;background:var(--frame);padding:1px;display:flex;flex-direction:column;min-height:0;min-width:0;
+  clip-path:polygon(var(--c) 0,100% 0,100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,0 100%,0 var(--c))}
+.frame>.in{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--panel);
+  clip-path:polygon(calc(var(--c) - .5px) 0,100% 0,100% calc(100% - var(--c) + .5px),calc(100% - var(--c) + .5px) 100%,0 100%,0 calc(var(--c) - .5px))}
+.frame.dimline{background:#3a3820}
+.frame.accent{background:var(--amber)}
+.frame.sm{--c:10px}
+
+.plate{display:inline-flex;background:#36341d;padding:0 1px 1px;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,14px 100%)}
+.plate>span{display:flex;align-items:center;gap:8px;height:24px;padding:0 24px;background:var(--raised);
+  font-family:var(--f-display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--text);white-space:nowrap;
+  clip-path:polygon(0 0,100% 0,calc(100% - 13.5px) 100%,13.5px 100%)}
+
+.brk{position:absolute;width:14px;height:14px;pointer-events:none;z-index:3}
+.brk.tr{top:6px;right:6px;border-top:2px solid var(--frame-hi);border-right:2px solid var(--frame-hi)}
+.brk.bl{bottom:6px;left:6px;border-bottom:2px solid var(--frame-hi);border-left:2px solid var(--frame-hi)}
+.frame.accent .brk{border-color:var(--amber)}
+.ticks-x{height:8px;background-image:repeating-linear-gradient(90deg,var(--frame-hi) 0 1px,transparent 1px 8px);opacity:.7}
+
+.label{font-family:var(--f-head);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+
+.btn{height:36px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;border-radius:2px;border:1px solid var(--amber-dim);
+  background:var(--raised);color:var(--text);font:600 14px/1 var(--f-body);transition:border-color .12s,background .12s,color .12s;white-space:nowrap}
+.btn:hover{border-color:var(--amber);background:#201e0d}
+.btn-primary{background:var(--amber);border-color:var(--amber);color:#0f0d04;box-shadow:0 0 16px rgba(184,171,62,.38)}
+.btn-primary:hover{background:#c4b850;border-color:#c4b850}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn-ghost:hover{background:var(--raised);border-color:var(--line);color:var(--text)}
+.btn-danger{background:transparent;border-color:#6b2520;color:var(--error)}
+.btn-danger:hover{border-color:var(--error);background:rgba(255,90,77,.08)}
+.icon-btn{width:36px;padding:0;justify-content:center}
+.navbtn{flex:none;align-self:flex-start;width:60px;height:51px;padding:0 1px 1px;border:0;background:var(--amber-dim);color:var(--text);transition:background .12s,color .12s}
+.navbtn>span{display:flex;align-items:center;justify-content:center;height:100%;background:var(--raised);transition:background .12s}
+.navbtn.prev{margin-right:-18px;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 100%,24px 100%)}
+.navbtn.prev>span{clip-path:polygon(0 0,calc(100% - 23.5px) 0,calc(100% - .5px) 100%,23.5px 100%);padding-right:6px}
+.navbtn.next{margin-left:-18px;clip-path:polygon(24px 0,100% 0,calc(100% - 24px) 100%,0 100%)}
+.navbtn.next>span{clip-path:polygon(23.5px 0,100% 0,calc(100% - 23.5px) 100%,.5px 100%);padding-left:6px}
+.navbtn:hover{background:var(--amber)}
+.navbtn:hover>span{background:#201e0d}
+.navbtn:focus-visible{outline:none;background:var(--amber)}
+.navbtn:focus-visible>span{background:#2a2812}
+.btn:focus-visible,.row-btn:focus-visible,a:focus-visible,.field:focus-visible,.backdrop:focus-visible,.chip:focus-visible{
+  outline:2px solid var(--amber);outline-offset:2px;box-shadow:0 0 0 5px rgba(184,171,62,.16)}
+
+.row-btn{display:flex;gap:10px;width:100%;padding:8px 10px;border:1px solid transparent;border-radius:2px;background:transparent;color:var(--text);text-align:left;font:400 14px/1.4 var(--f-body)}
+.row-btn:hover{background:var(--raised);border-color:var(--line)}
+.row-btn[aria-current="true"]{background:var(--raised);border-color:var(--amber)}
+
+.chip{height:34px;padding:0 12px;border-radius:2px;border:1px solid #706c4e;background:var(--bg);color:var(--text);font:500 12.5px/1 var(--f-body)}
+.chip:hover{border-color:var(--amber)}
+.chip[aria-pressed="true"]{border-color:var(--amber);background:var(--raised);color:var(--amber)}
+
+.tab{height:30px;padding:0 22px;border:0;background:#18170a;color:var(--muted);
+  font-family:var(--f-display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  clip-path:polygon(11px 0,calc(100% - 11px) 0,100% 100%,0 100%)}
+.tab:hover{background:#2a2810;color:var(--text)}
+.tab:focus-visible{outline:none;background:#38361a;color:var(--text);text-decoration:underline;text-underline-offset:4px}
+.tab[aria-selected="true"]{background:var(--amber);color:#0f0d04}
+
+.switch{display:flex;align-items:center;gap:12px;width:520px;box-sizing:border-box;height:50px;padding:0 44px;border:0;background:var(--raised);color:var(--text);text-align:left;
+  clip-path:polygon(0 0,100% 0,calc(100% - 23.5px) 100%,23.5px 100%)}
+.switch:hover{background:#201e0d}
+.switch:focus-visible{outline:none;background:#2a2812;text-decoration:underline;text-underline-offset:4px}
+
+.field{background:var(--bg);border:1px solid #706c4e;border-radius:2px;color:var(--text);font-size:14px}
+.field:hover{border-color:var(--amber)}
+.field.is-focus,.field:focus-visible{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber),0 0 14px rgba(184,171,62,.24)}
+
+.tag{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border:1px solid currentColor;border-radius:2px;
+  font-family:var(--f-head);font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+
+.seg{display:flex;gap:3px}
+.seg>span{width:16px;height:8px;background:var(--line);clip-path:polygon(3px 0,100% 0,calc(100% - 3px) 100%,0 100%)}
+.bar{position:relative;height:10px;background:#121108;border:1px solid var(--line)}
+.bar>i{position:absolute;inset:1px auto 1px 1px;background:repeating-linear-gradient(90deg,var(--amber) 0 5px,transparent 5px 7px)}
+
+.chev{flex:1 1 0;min-width:0;height:36px;padding:1px;background:#36341d;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%)}
+.chev:first-child{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%)}
+.chev>div{height:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 18px 0 22px;background:var(--panel);white-space:nowrap;overflow:hidden;
+  clip-path:polygon(0 0,calc(100% - 11.5px) 0,100% 50%,calc(100% - 11.5px) 100%,0 100%,11.5px 50%)}
+.chev:first-child>div{clip-path:polygon(0 0,calc(100% - 11.5px) 0,100% 50%,calc(100% - 11.5px) 100%,0 100%)}
+
+@keyframes ember{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(184,171,62,.55)}50%{opacity:.5;box-shadow:0 0 8px 2px rgba(184,171,62,.35)}}
+.pulse{animation:ember 1.6s ease-in-out infinite}
+@keyframes chevGlow{0%,100%{background:var(--amber)}50%{background:#e0d88a}}
+.chev.live{animation:chevGlow 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.pulse,.chev.live{animation:none}}
+.scroll{scrollbar-color:var(--line) transparent;scrollbar-width:thin}
+.backdrop{position:absolute;inset:0;z-index:20;border:0;background:rgba(3,3,2,.66);cursor:default}
+.modal{position:absolute;z-index:21;top:64px;left:50%;transform:translateX(-50%);max-height:calc(100% - 90px)}
+.sh{flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;padding:0 6px 0 14px}
+.tg{width:28px;height:28px;margin-top:2px}
+.dl{margin:0;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;font-size:12.5px}
+.dl>dt{color:var(--muted)}
+.btn[aria-disabled="true"]{opacity:.42;cursor:not-allowed;box-shadow:none}
+.btn[aria-disabled="true"]:hover{border-color:var(--amber-dim);background:var(--raised)}
+.btn-primary[aria-disabled="true"]:hover{border-color:var(--amber);background:var(--amber)}
+.evb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:2px;text-align:left;color:var(--text);
+  background-color:#060503;background-image:linear-gradient(rgba(80,76,30,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(80,76,30,.18) 1px,transparent 1px);background-size:16px 16px}
+.evb:hover{border-color:var(--amber-dim)}
+.evb:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+button.sh{width:100%;border:0;margin:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+button.sh:hover .tgi{color:var(--text);background:var(--raised)}
+button.sh:hover .plate{background:#4a4729}
+button.sh:focus-visible{outline:none}
+button.sh:focus-visible .tgi{outline:2px solid var(--amber);outline-offset:1px;color:var(--text)}
+.tgi{flex:none;width:28px;height:28px;margin-top:2px;display:grid;place-items:center;border-radius:2px;color:var(--muted);transition:background .12s,color .12s}
+.scroll>*{flex-shrink:0}
+.chevbtn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.chev.live>div{animation:chevGlow 1.4s ease-in-out infinite}
+.chevbtn:focus-visible{outline:2px solid #e0d88a;outline-offset:-4px}
+.log-err{color:#ff8a80}
+.navbtn.newbtn{width:auto;margin:0 0 0 8px;flex:none;clip-path:polygon(24px 0,100% 0,calc(100% - 24px) 100%,0 100%)}
+.navbtn.newbtn>span{gap:8px;padding:0 38px 0 44px;font:600 14px/1 var(--f-body);white-space:nowrap;clip-path:polygon(23.5px 0,100% 0,calc(100% - 23.5px) 100%,.5px 100%)}
+.avatar{flex:none;width:30px;height:30px;display:grid;place-items:center;padding:0;background:#14120a;border:1px solid #77701f;border-radius:2px;color:var(--text);font-family:var(--f-mono);font-size:11px;font-weight:700}
+.avatar:hover,.avatar[aria-expanded="true"]{border-color:var(--amber);background:#201e0d}
+.avatar:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.menu{position:absolute;z-index:31;top:48px;right:22px;width:208px;padding:6px;background:#0b0a05;border:1px solid var(--frame-hi);border-radius:2px;box-shadow:0 12px 32px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:1px}
+.mi{display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 10px;border:0;border-radius:2px;background:transparent;color:var(--text);font:500 14px/1 var(--f-body);text-align:left}
+.mi:hover,.mi:focus-visible{background:#201e0d;outline:none;color:var(--amber)}
+.mi.out{color:#ff8a80}.mi.out:hover,.mi.out:focus-visible{color:#ffb4ab}
+.menu hr{margin:4px 6px;border:0;border-top:1px solid var(--line)}
+.chev.todo>div{background:#090804}
+.stop{display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;background:#090804;border:1px solid #2c2a14;border-radius:2px}
+.stop.ok{border-color:#2f5a44}
+.stop.req{border-color:#7a4a18}
+.num{flex:none;width:24px;height:24px;display:grid;place-items:center;background:#36341d;color:var(--text);font:700 12.5px/1 var(--f-head);clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px)}
+.stop.ok .num{background:#2f5a44}
+.acc{height:32px;padding:0 12px;font-size:12.5px}
+.acc[aria-pressed="true"]{border-color:#4fd69c;color:#4fd69c;background:#0d1a12}
+.shot{display:flex;flex-direction:column;width:100%;background:#fff;border:1px solid #3c3a1b;border-radius:3px;overflow:hidden}
+.shot.m{width:168px}
+.shot-bar{flex:none;height:20px;display:flex;align-items:center;gap:4px;padding:0 8px;background:#e8e8e3;font:500 11px/1 var(--f-mono);color:#5f5f58;white-space:nowrap;overflow:hidden}
+.shot-bar i{flex:none;width:6px;height:6px;border-radius:50%;background:#c3c3bb}
+.shot-bar span{margin-left:6px;overflow:hidden;text-overflow:ellipsis}
+.shot-body{height:168px;display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:#f8f8f6;color:#1d1d1b;font-family:var(--f-body)}
+.shot.m .shot-body{height:260px;padding:10px}
+.shot-head{display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+.sbtn{display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #c9ccd6;border-radius:4px;font-size:11px;color:#3b4a8f;background:#fff}
+.sbtn.solid{background:#3b5bdb;border-color:#3b5bdb;color:#fff}
+.shot-th{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:5px 6px;border-bottom:1px solid #dddcd5;font-size:11px;color:#6b6b63}
+.shot.m .shot-th{grid-template-columns:repeat(2,minmax(0,1fr))}
+.shot.m .dk{display:none}
+.skel{display:flex;flex-direction:column;gap:8px;padding:4px 6px}
+.skel i{display:block;height:12px;border-radius:3px;background:linear-gradient(90deg,#e6e6e0,#efefea,#e6e6e0)}
+.shot-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;color:#6b6b63;font-size:11px}
+.shot-empty b{color:#1d1d1b;font-size:12.5px}
+.codeblk{display:flex;flex-direction:column;border:1px solid #2c2a14;border-radius:2px;background:#030302;font-family:var(--f-mono);font-size:12.5px;line-height:20px;overflow:hidden}
+.codeblk pre{margin:0;padding:6px 0;overflow-x:auto}
+.cl{display:flex;white-space:pre}
+.cl>span:first-child{flex:none;width:44px;padding-right:10px;text-align:right;color:#878369;user-select:none}
+.vchip{height:26px;padding:0 10px;font-size:12.5px}
+.hbtn{display:inline-flex;align-items:center;gap:5px;height:24px;margin-left:2px;padding:0 8px;border:1px solid transparent;border-radius:2px;background:transparent;color:var(--muted);font:500 12.5px/1 var(--f-body)}
+.hbtn:hover,.hbtn:focus-visible{color:var(--amber);border-color:var(--line);outline:none}
+.hbtn[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+.hbtn[aria-disabled="true"]:hover{color:var(--muted);border-color:transparent}
+.chev.done{background:var(--amber)}
+.chev.done>div{background:var(--panel)}
+.chev.done:hover>div{background:#201e0d}
+.chev.cur,.chev.cur>div{background:var(--amber)}
+.chev.cur.tone-warn,.chev.cur.tone-warn>div{background:var(--warning)}
+.chev.cur.tone-err,.chev.cur.tone-err>div{background:var(--error)}
+.sh .plate>span{background:#36341d;color:var(--text);font-family:var(--f-head);font-weight:700;font-size:11px;letter-spacing:.14em}
+button.sh:hover .plate>span{background:#4a4729}
+.tile{display:flex;align-items:baseline;gap:8px;height:34px;padding:0 14px;background:#0b0a05;border:1px solid #3a3820;border-radius:2px;color:var(--text)}
+.tile:hover{border-color:var(--amber)}
+.tile:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.tile-n{font:700 16px/34px var(--f-head)}
+.tile-l{font-size:12.5px;color:var(--muted)}
+.chip[role="radio"][aria-checked="true"]{border-color:var(--amber);background:var(--raised);color:var(--amber)}
+</style>
+</helmet>
+
+<div style="height: 100vh; overflow: hidden; box-sizing: border-box; padding: 10px; background: #030302; display: flex; font-size: 14px; line-height: 1.5; color: #e6e2c8;">
+<div class="frame" style="--c: 26px; flex: 1;">
+<span class="brk tr" style="top: 8px; right: 8px; width: 22px; height: 22px;"></span><span class="brk bl" style="bottom: 8px; left: 8px; width: 22px; height: 22px;"></span>
+<div class="in" style="background: #030302; padding: 4px;">
+<div class="frame dimline" style="--c: 22px; flex: 1;">
+<div class="in" style="position: relative; background-color: #060503; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; padding: 0 14px 14px; gap: 10px;">
+
+<!-- HEADER -->
+<header style="flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; gap: 12px;">
+<div style="display: flex; flex-direction: column; gap: 6px; padding-top: 12px; padding-left: 18px; min-width: 0;">
+<a href="Home.dc.html" aria-current="page" aria-label="Orc home" style="display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none;">
+<svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true" style="flex: none;"><path d="M7 1h18v18l-6 6H1V7z" fill="none" stroke="#b8ab3e" stroke-width="1.5"></path><path d="M7 10h12" stroke="#b8ab3e" stroke-width="1.75"></path><path d="M9 20l1.4-5.5l1.4 5.5z" fill="#b8ab3e"></path><path d="M14.2 20l1.4-5.5l1.4 5.5z" fill="#b8ab3e"></path></svg>
+<span style="font-family: var(--f-display); font-size: 16px; letter-spacing: .3em;">ORC</span>
+</a>
+<div class="ticks-x" aria-hidden="true" style="max-width: 240px;"></div>
+</div>
+<div style="display: flex; align-items: flex-start;">
+<div style="display: inline-flex; background: #77701f; padding: 0 1px 1px; clip-path: polygon(0 0,100% 0,calc(100% - 24px) 100%,24px 100%);">
+<button class="switch" aria-haspopup="dialog" aria-expanded="{{quickOpen}}" onClick="{{openQuick}}">
+<span style="flex: 1; display: flex; flex-direction: column; min-width: 0; gap: 1px;">
+<span class="mono" style="font-size: 11px; letter-spacing: .16em; color: #a19d7c; text-transform: uppercase;">Home · Monday, Oct 5 · <span style="color: #e6e2c8;">{{needN}} need you</span></span>
+<span style="font-family: var(--f-head); font-weight: 600; font-size: 19px; color: #e6e2c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Good evening, {{me.short}}</span>
+</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b8ab3e" stroke-width="2" stroke-linecap="square" aria-hidden="true" style="flex: none;"><path d="M6 9l6 6l6-6"></path></svg>
+</button>
+</div>
+</div>
+<div style="display: flex; align-items: flex-start; min-width: 0;">
+<a class="navbtn newbtn" href="{{consoleHref}}" style="text-decoration: none;"><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>New task</span></a>
+<div style="margin-left: auto; padding: 12px 22px 0 0;"><span class="avatar" title="{{me.name}} · {{me.role}}"><span aria-hidden="true">{{me.initials}}</span><span class="sr">Signed in as {{me.name}}, {{me.role}}</span></span></div>
+</div>
+</header>
+
+<!-- SUMMARY -->
+<nav aria-label="Jump to a list" style="flex: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 4px;">
+<sc-for list="{{tiles}}" as="tl" hint-placeholder-count="5"><a href="#{{tl.id}}" class="tile" style="text-decoration: none;"><span class="tile-n" style="color: {{tl.color}};">{{tl.n}}</span><span class="tile-l">{{tl.label}}</span></a></sc-for>
+</nav>
+
+<sc-if value="{{arLast.shown}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 7px 14px; margin: 0 4px; background: #0e0d06; border: 1px solid #3c3a1b; border-radius: 2px; font-size: 14px;">
+<span><strong style="font-weight: 600;">Archived {{arLast.key}}.</strong> <span style="color: #a19d7c;">Archived in Jira too. Reason: {{arLast.reason}}.</span></span>
+<span style="flex: 1;"></span>
+<button class="btn btn-ghost" onClick="{{arLast.undo}}" style="height: 28px; font-size: 12.5px;">Undo</button>
+<button class="btn btn-ghost icon-btn" aria-label="Dismiss" onClick="{{arLast.dismiss}}" style="height: 28px; width: 28px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg></button>
+</div>
+</sc-if>
+
+<sc-if value="{{kp.shown}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 7px 14px; margin: 0 4px; background: #0e0d06; border: 1px solid #3c3a1b; border-radius: 2px; font-size: 14px;">
+<span><strong style="font-weight: 600;">Kept {{kp.key}} open.</strong> <span style="color: #a19d7c;">Posted "{{kp.who}} decided to keep this task open" to the task and Jira. It comes back here if it goes quiet for another 30 days.</span></span>
+<span style="flex: 1;"></span>
+<button class="btn btn-ghost" onClick="{{kp.undo}}" style="height: 28px; font-size: 12.5px;">Undo</button>
+<button class="btn btn-ghost icon-btn" aria-label="Dismiss" onClick="{{kp.dismiss}}" style="height: 28px; width: 28px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg></button>
+</div>
+</sc-if>
+<sc-if value="{{runs.shown}}" hint-placeholder-val="{{ false }}">
+<div class="frame sm" id="runs" style="flex: none;"><section class="in" aria-label="Agents running">
+<div class="sh" style="padding-right: 14px;"><span class="plate"><span>Agents running</span></span><span class="mono" style="font-size: 11px; color: #a19d7c; padding-top: 4px;">{{runs.note}}</span></div>
+<ul style="margin: 0; padding: 6px 10px 10px; list-style: none; display: flex; flex-direction: column; gap: 2px;">
+<sc-for list="{{runs.rows}}" as="r" hint-placeholder-count="3"><li style="display: grid; grid-template-columns: 14px minmax(0, 2.2fr) minmax(0, 1.4fr) 56px 56px minmax(0, 1.6fr) auto; align-items: center; gap: 12px; padding: 6px 6px; border-bottom: 1px solid #1c1a0c; font-size: 14px;">
+<span style="display: flex; justify-content: center;"><sc-if value="{{r.pulse}}" hint-placeholder-val="{{ true }}"><span class="pulse" aria-hidden="true" style="display: block; width: 8px; height: 8px; background: {{r.color}}; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);"></span></sc-if><sc-if value="{{r.still}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="display: block; width: 8px; height: 8px; background: {{r.color}}; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);"></span></sc-if></span>
+<a href="{{consoleHref}}" style="min-width: 0; display: flex; flex-direction: column; color: inherit; text-decoration: none;"><span style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.title}}</span><span class="mono" style="font-size: 11px; color: #a19d7c;">{{r.key}} · Claude Code</span></a>
+<span style="color: {{r.color}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.step}}</span>
+<span class="mono" style="font-size: 12.5px; color: #a19d7c;">{{r.elapsed}}</span>
+<span class="mono" style="font-size: 12.5px; color: #a19d7c;">{{r.cost}}</span>
+<span style="font-size: 12.5px; color: #a19d7c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.last}}</span>
+<span style="display: flex; gap: 6px;"><a class="btn btn-ghost" href="{{consoleHref}}" style="height: 28px; font-size: 12.5px; text-decoration: none;">Open</a><sc-if value="{{r.canPause}}" hint-placeholder-val="{{ true }}"><button class="btn btn-ghost" onClick="{{r.pause}}" style="height: 28px; font-size: 12.5px;">{{r.pauseLabel}}</button></sc-if><sc-if value="{{r.canTake}}" hint-placeholder-val="{{ true }}"><a class="btn" href="{{consoleHref}}" style="height: 28px; font-size: 12.5px; text-decoration: none;">Take over</a></sc-if></span>
+</li></sc-for>
+</ul>
+</section></div>
+</sc-if>
+
+<!-- BODY -->
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px;">
+<sc-for list="{{cols}}" as="col" hint-placeholder-count="3">
+<div class="scroll" style="min-height: 0; overflow-y: auto; padding-right: 2px; display: flex; flex-direction: column; gap: 10px;">
+<sc-for list="{{col.lists}}" as="L" hint-placeholder-count="2">
+<div class="{{L.frameCls}}" id="{{L.id}}" style="flex: none;"><section class="in" aria-label="{{L.title}}">
+<div class="sh" style="padding-right: 14px;"><span class="plate"><span>{{L.title}}</span></span><span class="mono" style="font-size: 11px; color: #a19d7c; padding-top: 4px;">{{L.note}}</span></div>
+<sc-if value="{{L.isStale}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 8px 14px 0; font-size: 12.5px; color: #a19d7c;">No activity for 30 days or more. Keep posts a comment and restarts the clock; Archive closes it in Jira with a reason.</p>
+<ul style="margin: 0; padding: 8px 8px 10px; list-style: none; display: flex; flex-direction: column; gap: 6px;">
+<sc-for list="{{L.items}}" as="it" hint-placeholder-count="3"><li style="display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid #2c2a14; border-radius: 2px;">
+<a href="{{it.href}}" style="display: flex; flex-direction: column; gap: 2px; color: inherit; text-decoration: none;"><span style="font-weight: 500;">{{it.title}}</span><span style="font-size: 12.5px;"><span style="color: #ff9a3c; font-weight: 500;">{{it.status}}</span> <span class="mono" style="color: #a19d7c;">{{it.key}}</span> <span style="color: #a19d7c;">{{it.meta}}</span></span></a>
+<div style="display: flex; gap: 6px;"><button class="btn" onClick="{{it.keep}}" style="height: 28px; font-size: 12.5px;">Keep</button><button class="btn btn-danger" aria-haspopup="dialog" onClick="{{it.archive}}" style="height: 28px; font-size: 12.5px;">Archive…</button></div>
+</li></sc-for>
+<sc-if value="{{L.empty}}" hint-placeholder-val="{{ false }}"><li style="padding: 6px 10px; font-size: 12.5px; color: #a19d7c;">Nothing has gone quiet.</li></sc-if>
+</ul>
+</sc-if>
+<sc-if value="{{L.isNormal}}" hint-placeholder-val="{{ true }}">
+<ul style="margin: 0; padding: 8px 8px 10px; list-style: none; display: flex; flex-direction: column; gap: 2px;">
+<sc-for list="{{L.items}}" as="it" hint-placeholder-count="3"><li>
+<a class="row-btn" href="{{it.href}}" style="box-sizing: border-box; align-items: flex-start; gap: 10px; text-decoration: none;">
+<span style="flex: none; width: 9px; height: 9px; margin-top: 6px; background: {{it.color}}; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);" aria-hidden="true"></span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+<span style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{it.title}}</span>
+<span style="display: flex; flex-wrap: wrap; gap: 2px 8px; font-size: 12.5px;"><span style="color: {{it.color}}; font-weight: 500;">{{it.status}}</span><span class="mono" style="color: #a19d7c;">{{it.key}}</span><span style="color: #a19d7c;">{{it.meta}}</span></span>
+</span>
+<sc-if value="{{it.hasDue}}" hint-placeholder-val="{{ false }}"><span style="flex: none; font-size: 12.5px; color: {{it.dueColor}}; padding-top: 1px;">{{it.due}}</span></sc-if>
+</a>
+</li></sc-for>
+<sc-if value="{{L.empty}}" hint-placeholder-val="{{ false }}"><li style="padding: 6px 10px; font-size: 12.5px; color: #a19d7c;">Nothing here.</li></sc-if>
+</ul>
+</sc-if>
+</section></div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+
+<!-- archive modal -->
+<sc-if value="{{ar.shown}}" hint-placeholder-val="{{ false }}">
+<button class="backdrop" aria-label="Close" onClick="{{ar.close}}"></button>
+<div class="frame modal" role="dialog" aria-modal="true" aria-labelledby="ar-h" style="width: min(560px, calc(100% - 40px));">
+<span class="brk tr"></span><span class="brk bl"></span>
+<div class="in">
+<div class="sh" style="padding: 0 12px 0 22px;"><span class="plate"><span id="ar-h">Archive {{ar.key}}</span></span>
+<button class="btn btn-ghost icon-btn" aria-label="Close" onClick="{{ar.close}}" style="width: 30px; height: 30px; margin-top: 4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg></button></div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 14px 22px 18px; display: flex; flex-direction: column; gap: 14px;">
+<div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600; font-size: 16px;">{{ar.title}}</span><span style="font-size: 12.5px; color: #a19d7c;">{{ar.meta}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span id="ar-r" style="font-size: 14px; font-weight: 600;">Why archive it? <span style="font-weight: 400; color: #ff9a3c;">· required</span></span>
+<div role="radiogroup" aria-labelledby="ar-r" style="display: flex; flex-wrap: wrap; gap: 6px;"><sc-for list="{{ar.reasons}}" as="r" hint-placeholder-count="5"><button class="chip" role="radio" aria-checked="{{r.pressed}}" aria-pressed="{{r.pressed}}" onClick="{{r.pick}}">{{r.label}}</button></sc-for></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="ar-note" style="font-size: 14px; font-weight: 600;">Details <span style="font-weight: 400; color: {{ar.noteHintColor}};">· {{ar.noteHint}}</span></label><textarea id="ar-note" class="field" rows="2" onInput="{{ar.onNote}}" placeholder="{{ar.notePh}}" style="resize: vertical; padding: 9px 12px; line-height: 1.5;"></textarea></div>
+<p style="margin: 0; padding: 10px 12px; background: #14120a; border: 1px solid #2c2a14; border-radius: 2px; font-size: 14px; color: #a19d7c;">{{ar.effect}}</p>
+</div>
+<div style="flex: none; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 12px 22px 16px; border-top: 1px solid #2c2a14;">
+<button class="btn btn-ghost" onClick="{{ar.close}}">Cancel</button>
+<button class="btn btn-danger" aria-disabled="{{ar.disabled}}" onClick="{{ar.confirm}}">Archive task</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- QUICK LIST -->
+<sc-if value="{{quick}}" hint-placeholder-val="{{ false }}">
+<button class="backdrop" aria-label="Close" onClick="{{closeQuick}}"></button>
+<div class="frame modal" role="dialog" aria-modal="true" aria-labelledby="qk-h" style="width: min(600px, calc(100% - 40px));">
+<span class="brk tr"></span><span class="brk bl"></span>
+<div class="in">
+<div class="sh" style="gap: 10px; padding: 0 12px 0 22px;"><span class="plate"><span id="qk-h">Needs you now</span></span>
+<button class="btn btn-ghost" onClick="{{closeQuick}}" style="height: 30px; margin-top: 4px; font-size: 12.5px;">Close<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button></div>
+<ul class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 12px 16px 18px; list-style: none; display: flex; flex-direction: column; gap: 2px;">
+<sc-for list="{{needs}}" as="it" hint-placeholder-count="5"><li><a class="row-btn" href="{{consoleHref}}" style="box-sizing: border-box; align-items: flex-start; gap: 10px; text-decoration: none;"><span style="flex: none; width: 9px; height: 9px; margin-top: 6px; background: {{it.color}}; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);" aria-hidden="true"></span><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 500;">{{it.title}}</span><span style="font-size: 12.5px;"><span style="color: {{it.color}}; font-weight: 500;">{{it.status}}</span> <span class="mono" style="color: #a19d7c;">{{it.key}}</span></span></span></a></li></sc-for>
+</ul>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"role":{"editor":"enum","options":["eng","non"],"default":"eng","section":"Viewer"},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { paused: {}, quick: false, archived: {}, kept: {}, arTarget: null, arReason: null, arNote: '', arJira: true, arLast: null }; }
+
+  renderVals() {
+    var self = this, s = this.state, noop = function () {};
+    var isEng = (this.props.role || 'eng') === 'eng';
+    var me = isEng ? { name: 'Josh Evensen', short: 'Josh', initials: 'JE', role: 'Engineer' } : { name: 'Dana Ruiz', short: 'Dana', initials: 'DR', role: 'Designer' };
+    var consoleHref = isEng ? 'Console.dc.html' : 'ConsoleNonEng.dc.html';
+    var C = { warn: '#ff9a3c', err: '#ff5a4d', ok: '#4fd69c', run: '#b8ab3e', info: '#5fb4ff', muted: '#a19d7c', high: '#ff5a4d', medium: '#ff9a3c', low: '#a19d7c' };
+    // Every task appears in each list it belongs to; one row per question the list answers.
+    var T = {
+      'DOC-31': ['Write the billing API pagination guide', 'Approve spec', 'warn', 'Spec'],
+      'WEB-497': ['Fix the sign-in loop on Safari 17', 'Approve plan', 'warn', 'Analyze'],
+      'WEB-501': ['Round currency in the CSV export the same way as invoices', 'Question', 'warn', 'Build'],
+      'WEB-509': ['Change the sign-up button to "Start free trial"', 'Tripwire · fast lane', 'warn', 'Build'],
+      'WEB-470': ['Update the invoice PDF footer copy', isEng ? 'CI failed' : 'A check failed', 'err', 'Ship'],
+      'WEB-465': ['Show tax on invoice line items', '3 proposals to decide', 'warn', 'Feedback'],
+      'BIL-88': ['Rate-limit webhook retries', 'Orc is building', 'run', 'Build'],
+      'WEB-482': ['Add an empty state to the invoices list', 'Ready for review', 'ok', 'Review'],
+      'SUP-219': ['Customers get two receipt emails after paying by card', 'Finding ready', 'ok', 'Analyze'],
+      'WEB-510': ['Add CSV export to the payouts page', 'Not started', 'muted', 'Spec'],
+      'WEB-512': ['Show the account owner on the team page', 'Not started', 'muted', 'Spec'],
+      'BIL-93': ['Email a warning before a card expires', 'Not started', 'muted', 'Spec'],
+      'WEB-476': ['Paginate the customers API', 'Waiting on code review · 5h', 'info', 'Feedback'],
+      'WEB-480': ['Rename the plan tiers', isEng ? 'Waiting on Dana\'s answer' : 'Waiting on Priya\'s answer', 'info', 'Spec'],
+      'WEB-471': ['Tighten spacing on the pricing page', 'Waiting on engineer review · 1d', 'info', 'Feedback'],
+      'WEB-478': ['Update the empty cart illustration', 'Waiting on engineer review · 3h', 'info', 'Feedback'],
+      'BIL-81': ['Upgrade pg to 8.16', 'Merged yesterday', 'muted', 'Done'],
+      'WEB-458': ['Fix the timezone on scheduled reports', 'Merged Oct 2', 'muted', 'Done'],
+      'SUP-210': ['Explain why a refund shows twice', 'Closed Oct 1 · no code change', 'muted', 'Done'],
+      'WEB-466': ['New icons in the settings sidebar', 'Merged Oct 3', 'muted', 'Done'],
+      'WEB-391': ['Add bulk edit to the products table', 'Quiet 47 days', 'warn', 'Spec'],
+      'BIL-62': ['Support SEPA direct debit', 'Quiet 63 days', 'warn', 'Analyze'],
+      'WEB-402': ['Dark mode for the dashboard', 'Quiet 38 days', 'warn', 'To do'],
+      'WEB-405': ['Refresh the onboarding illustrations', 'Quiet 41 days', 'warn', 'Spec']
+    };
+    var staleNote = { 'WEB-391': '· spec never approved', 'BIL-62': '· plan approved, never built', 'WEB-402': '· no due date', 'WEB-405': '· no due date' };
+    var due = { 'WEB-470': ['Tomorrow', '#ff9a3c'], 'WEB-497': ['Wed, Oct 7', '#e6e2c8'], 'BIL-88': ['Fri, Oct 9', '#e6e2c8'], 'WEB-510': ['Mon, Oct 12', '#a19d7c'] };
+    var live = function (k) { return !s.archived[k]; };
+    var row = function (key) {
+      var t = T[key], d = due[key];
+      return { key: key, title: t[0], status: t[1], color: C[t[2]], meta: t[3] === 'Done' ? '' : '· ' + t[3], href: consoleHref, hasDue: !!d, due: d ? 'Due ' + d[0] : '', dueColor: d ? d[1] : '' };
+    };
+    var rows = function (keys) { return keys.filter(live).map(row); };
+    var pr = function (num, key, title, risk, meta) { return { key: num + ' · ' + key, title: title, status: risk.charAt(0).toUpperCase() + risk.slice(1) + ' risk', color: C[risk], meta: meta, href: 'ReviewPR.dc.html', hasDue: false, due: '', dueColor: '' }; };
+    var list = function (id, title, note, items, heavy) { return { id: id, title: title, note: note, items: items, empty: items.length === 0, isNormal: true, isStale: false, frameCls: 'frame sm' + (heavy ? ' accent' : '') }; };
+
+    var staleKeys = (isEng ? ['BIL-62', 'WEB-391', 'WEB-402'] : ['WEB-405', 'WEB-391']).filter(function (k) { return live(k) && !s.kept[k]; });
+    var stale = staleKeys.map(function (k) {
+      var t = T[k];
+      return { key: k, title: t[0], status: t[1], meta: staleNote[k] || '', href: consoleHref,
+        keep: function () { var kp = Object.assign({}, self.state.kept); kp[k] = true; self.setState({ kept: kp, keptLast: k, arLast: null }); },
+        archive: function () { openArchive(k, t[0], k + ' · ' + t[3] + ' · ' + t[1].toLowerCase(), t[3] !== 'Spec' && t[3] !== 'To do'); } };
+    });
+
+    var needs = rows(['DOC-31', 'WEB-497', 'WEB-501', 'WEB-509', 'WEB-470', 'WEB-465']);
+    var dueSoon = rows(['WEB-470', 'WEB-497', 'BIL-88', 'WEB-510']);
+    var review = rows(['WEB-482', 'SUP-219']);
+    var working = rows(['BIL-88']);
+    var todo = rows(['WEB-510', 'WEB-512', 'BIL-93']);
+    var waiting = rows(isEng ? ['WEB-476', 'WEB-480'] : ['WEB-471', 'WEB-478', 'WEB-480']);
+    var prs = [pr('#1291', 'BIL-90', 'Apply account credit before charging the card', 'high', '· claimed by you'), pr('#1294', 'SUP-230', 'Send one receipt email per payment', 'medium', '· waiting 4h'), pr('#1296', 'WEB-503', 'Show the VAT number on invoices', 'low', '· waiting 1h')];
+    var doneL = rows(isEng ? ['BIL-81', 'WEB-458', 'SUP-210'] : ['WEB-466', 'SUP-210']);
+    var staleList = { id: 'quiet', title: 'Gone quiet', note: 'decide or archive', items: stale, empty: stale.length === 0, isNormal: false, isStale: true, frameCls: 'frame sm' };
+
+    var archivedN = Object.keys(s.archived).length;
+    var tiles = [
+      { id: 'needs', n: needs.length, label: 'need you', color: '#ff9a3c' },
+      { id: 'due', n: dueSoon.length, label: 'due in 7 days', color: '#e6e2c8' },
+      { id: 'review', n: review.length, label: 'ready for your review', color: '#4fd69c' },
+      { id: 'runs', n: 3, label: 'agents running', color: '#b8ab3e' }
+    ].concat(isEng ? [{ id: 'prs', n: prs.length, label: 'PR reviews open', color: '#e6e2c8' }] : [])
+     .concat([{ id: 'waiting', n: waiting.length, label: isEng ? 'waiting on others' : 'waiting on engineers', color: '#5fb4ff' }, { id: 'quiet', n: stale.length, label: 'gone quiet', color: '#ff9a3c' }]);
+
+    // ---------- archive (reason required) ----------
+    var arT = s.arTarget || { key: '', title: '', meta: '', branch: false };
+    var arReasons = ['No longer needed', 'Duplicate of another task', 'Done another way', 'Won\'t do', 'Other'];
+    var arNeedsNote = s.arReason === 'Other' || s.arReason === 'Duplicate of another task';
+    var arOk = !!s.arReason && (!arNeedsNote || (s.arNote || '').trim().length > 0);
+    var ar = {
+      shown: !!s.arTarget, key: arT.key, title: arT.title, meta: arT.meta,
+      reasons: arReasons.map(function (r) { return { label: r, pressed: s.arReason === r ? 'true' : 'false', pick: function () { self.setState({ arReason: r }); } }; }),
+      noteHint: s.arReason === 'Duplicate of another task' ? 'required: which task?' : s.arReason === 'Other' ? 'required' : 'optional',
+      noteHintColor: arNeedsNote ? '#ff9a3c' : '#a19d7c',
+      notePh: s.arReason === 'Duplicate of another task' ? 'e.g. Same as WEB-512.' : 'Anything the team should know later.',
+      onNote: function (e) { self.setState({ arNote: e.target.value }); },
+      effect: 'Archives it in Jira too, with this reason. Jira is the source of truth, so the task leaves every list in Orc' + (arT.branch ? ' and its branch is kept for 30 days' : '') + '. Restoring it reopens it in Jira.',
+      disabled: arOk ? 'false' : 'true',
+      close: function () { self.setState({ arTarget: null }); },
+      confirm: function () {
+        if (!arOk) return;
+        var a = Object.assign({}, self.state.archived);
+        a[arT.key] = { reason: self.state.arReason, note: (self.state.arNote || '').trim(), title: arT.title };
+        self.setState({ archived: a, arTarget: null, arLast: arT.key, keptLast: null });
+      }
+    };
+    var openArchive = function (key, title, meta, branch) { self.setState({ arTarget: { key: key, title: title, meta: meta, branch: !!branch }, arReason: null, arNote: '', arJira: true }); };
+    var arLast = s.arLast && s.archived[s.arLast] ? { shown: true, key: s.arLast, reason: s.archived[s.arLast].reason,
+      undo: function () { var a = Object.assign({}, self.state.archived); delete a[self.state.arLast]; self.setState({ archived: a, arLast: null }); },
+      dismiss: function () { self.setState({ arLast: null }); } } : { shown: false, key: '', reason: '', undo: noop, dismiss: noop };
+
+    return {
+      me: me, consoleHref: consoleHref, needN: needs.length, tiles: tiles,
+      cols: [
+        { lists: [list('needs', 'Needs you', 'decide or answer', needs, true), list('review', 'Ready for your review', 'Orc finished', review)] },
+        { lists: [list('due', 'Due soon', 'next 7 days · from Jira', dueSoon), list('todo', 'To do', 'not started', todo), staleList] },
+        { lists: (isEng ? [list('prs', 'PR reviews', 'open to your team', prs)] : []).concat([
+          list('waiting', isEng ? 'Waiting on others' : 'Waiting on engineer review', isEng ? 'you\'re not blocking' : 'engineer approves code', waiting),
+          list('done', 'Recently done', 'last 7 days' + (archivedN ? ' · ' + archivedN + ' archived' : ''), doneL)]) }
+      ],
+      kp: s.keptLast && s.kept[s.keptLast] ? { shown: true, key: s.keptLast, who: me.short,
+        undo: function () { var kp = Object.assign({}, self.state.kept); delete kp[self.state.keptLast]; self.setState({ kept: kp, keptLast: null }); },
+        dismiss: function () { self.setState({ keptLast: null }); } } : { shown: false, key: '', who: '', undo: noop, dismiss: noop },
+      runs: (function () {
+        var defs = [['BIL-88', 'Rate-limit webhook retries', 'Writing the change', '14m', '$0.92', 'Edited retry/scheduler.ts', false],
+          ['WEB-514', 'Add sort to the payouts table', 'Running tests · fast lane', '3m', '$0.08', 'Ran 41 tests, 41 passed', false],
+          ['WEB-501', 'Round currency in the CSV export the same way as invoices', 'Paused · question for you', '11m', '$0.71', 'Posted a question to Jira', true]];
+        var rowsR = defs.map(function (d) {
+          var paused = !!(s.paused || {})[d[0]];
+          return { key: d[0], title: d[1], step: paused ? 'Paused by you' : d[2], elapsed: d[3], cost: d[4], last: d[5], needs: d[6], color: d[6] ? '#ff9a3c' : paused ? '#a19d7c' : '#b8ab3e',
+            pulse: !d[6] && !paused, still: d[6] || paused, pauseLabel: paused ? 'Resume' : 'Pause', canPause: !d[6],
+            canTake: isEng, pause: function () { var pp = Object.assign({}, self.state.paused); if (pp[d[0]]) delete pp[d[0]]; else pp[d[0]] = true; self.setState({ paused: pp }); } };
+        });
+        return { shown: true, rows: rowsR, note: '3 of 4 run slots in use · team limit' };
+      })(),
+      needs: needs, quick: !!s.quick, quickOpen: s.quick ? 'true' : 'false', ar: ar, arLast: arLast,
+      openQuick: function () { self.setState({ quick: true }); }, closeQuick: function () { self.setState({ quick: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
